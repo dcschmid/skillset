@@ -240,6 +240,21 @@ for sx in (-1,1):
     f=box(0.008,0.060,0.150)
     add(f"kira_flank_{'l' if sx<0 else 'r'}", f, (sx*0.205,0.010,1.100), MDARK)
 
+# ---- shading split: soft-shaded shells (reference MOSS look), flat decals ----
+SMOOTH=("kira_head","kira_eye","kira_iris","kira_pupil","kira_glint",
+        "kira_hair","kira_spike","kira_fringe","kira_lock","kira_helmet",
+        "kira_earcup","kira_earring","kira_neck","kira_collar","kira_arm",
+        "kira_shoulder","kira_bust","kira_torso","kira_leg","kira_boot")
+FLAT=("kira_gem","kira_buckle","kira_flank","kira_cuff","kira_glove",
+      "kira_mouth","kira_lip","kira_lid","kira_brow","kira_nose",
+      "kira_thigh","kira_knee","kira_toe","kira_visor","kira_fin")
+for o in sc.objects:
+    if o.type!="MESH" or not o.name.startswith("kira_"): continue
+    if any(o.name.startswith(p) for p in FLAT): continue
+    if any(o.name.startswith(p) for p in SMOOTH):
+        for p in o.data.polygons: p.use_smooth=True
+        o.data.update()
+
 # ================= presentation =================
 for nm,rotv,e,sz in (("kira_key",(50,0,-25),3.2,1.0),
                      ("kira_fill",(45,0,150),1.4,1.4),

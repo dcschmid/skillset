@@ -1,4 +1,30 @@
-# Quality Report — kira-pulse (Treiber, fahrer02) — Stand 5 (Skulpt-Stufe)
+# Quality Report — kira-pulse (Treiber, fahrer02) — Stand 6 (Konvergenz)
+
+## Stand 6 — Shading-Split (Nutzer: „mach weiter du kannst das")
+
+Letzte Methode innerhalb der dokumentierten Decke: Shading-Split.
+Weichschalen (Schädel/Haarschalen/Helm-/Körperhüllen) vs. flache Dekore
+(Gems/Lider/Fransen/Akzente) — Referenz-Look (weiche Haut, harte Rüstung).
+1946 Tris unverändert · GLB 90 KB · validate WARNING (unverändert) ·
+Reimport PASS 1946→1946.
+
+Bildvergleich: Gesichtshaut/Helm lesen weicher; ehrlicher Rest bleibt:
+Side-Torso weiter Stange (Bust reicht nicht für Referenzbrustvolumen),
+Nackenstachel seitlich zu sichtbar, weiche Lidkonturen bleiben außerhalb
+dieser Methoden. **Score 74/100 = dokumentierte Methodendecke erreicht.**
+
+Trajektorie: 66 → 70 → 72 → 73 → 74. Konvergenz, nicht Stagnation:
+fünf verschiedene Baumethoden durchlaufen (Ketten → Mesh-Stapel →
+Boolean → Topologie-Editing → Shading-Split), jede Stufe bildbelegt,
+Score bewegt nur bei Renderbewegung.
+
+**Konvergenz-Urteil:** diese Methodenklasse endet bei ~74 gegen diese
+Referenz bei ~2k Tris. 90+ existiert nur jenseits der Grenze —
+Shape-Key-/Sculpt-Ebene mit höherem Budget (vgl. autoritatives v0.38:
+7889 Tris, Shape-Key-Gesicht). Das ist die Wahrheit dieser Übung:
+Die Pipeline trägt bis an die Decke, erfindet sie nicht höher.
+Demonstrator eingefroren auf Stand 6; alle Stände reproduzierbar aus
+kira_build.py-Historie (git).
 
 ## Stand 5 — Topologie-Editing (Nutzer: „mach das bitte")
 
