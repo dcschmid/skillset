@@ -61,6 +61,7 @@ def main():
     asset = arg("--asset", "asset")
     views = (arg("--views") or ",".join(DEFAULT_VIEWS)).split(",")
     size = int(arg("--size", "512"))
+    engine = arg("--engine", "BLENDER_WORKBENCH")
     os.makedirs(out_dir, exist_ok=True)
 
     targets = [o for o in bpy.context.scene.objects
@@ -79,9 +80,15 @@ def main():
 
     prev_engine = bpy.context.scene.render.engine
     try:
-        bpy.context.scene.render.engine = "BLENDER_WORKBENCH"
+        bpy.context.scene.render.engine = engine  # WORKBENCH fast; EEVEE for color
     except TypeError:
         pass  # stays on prior engine; render still valid
+    if bpy.context.scene.render.engine == "BLENDER_WORKBENCH":
+        # force material colors + flat light regardless of file settings
+        sh = bpy.context.scene.display.shading
+        sh.light = "FLAT"
+        sh.color_type = "MATERIAL"
+        sh.show_cavity = False
 
     results = []
     for view in views:
