@@ -1,0 +1,7 @@
+# generated artifacts
+out/
+*.glb
+*.blend1
+.artifacts/
+__pycache__/
+.installed-manifest
