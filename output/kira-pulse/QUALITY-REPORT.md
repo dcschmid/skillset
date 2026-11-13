@@ -1,4 +1,26 @@
-# Quality Report — kira-pulse (Treiber, fahrer02) — Stand 2 (ehrlich)
+# Quality Report — kira-pulse (Treiber, fahrer02) — Stand 3 (Mesh-Augen)
+
+## Stand 3 — Mesh-Ebene Gesichtsrunde (Nutzer: „Dann mach das bitte")
+
+Neu in `kira_build.py`: Bernstein-Iris-Scheibe dominiert das Auge (80 %),
+dunkle Pupille, weißer Glanzpunkt, dunkles oberes Lid, braue Augenlinie
+tiefer (stylisiert), Mund+Unterlippe, Gesichts-Bumps für Side-Profil.
+1842 Tris (Budget 2500–4000 gehalten). validate WARNING (unverändert
+beabsichtigt) · GLB 134 KB · Reimport PASS 1842→1842.
+
+Ergebnis Bildvergleich: das Gesicht liest jetzt als **Gesicht mit bernstein
+Anime-Augen** statt Punkt-Puppen-Gesicht (Referenz-Nähe klar verbessert).
+Restabstand zur Referenz bleibt real: Referenz-Augen haben weiche
+Lidkanten/Wimpern (Mesh-Ketten liefern harte Zylinder-Kanten), Fransenform
+gröber, Torso-Flanken ohne durchgehend facetten Sweep.
+
+Ehrlicher Score: **70/100** (Stand 2: 66 → +4 aus dokumentierter
+Verbesserung: Silhouette unverändert, Identität +4 durch lesbares Anime-
+Auge). 90 bleibt durch Primitiv-Ketten methodisch begrenzt (see
+face-modeling.md „Method ceiling"); für 90+ braucht es Lid-Geometrie aus
+Skinning + Facetten-Sweep am Torso — nächste Stufe, nicht diese Methode.
+
+## Stand 2 (historisch)
 
 Datum: 2026-11-13 · Blender 5.3.0 (02f0899d) · Pipeline: lowpoly-reference-to-blender
 Designautorität: `~/Downloads/Drivers/kira-pulse/character/{front,side,back}.png`

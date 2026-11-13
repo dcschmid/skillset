@@ -175,18 +175,30 @@ for sx in (-1,1):
     bm=cyl(8,0.056,0.058); ry(bm,math.pi/2)
     add(f"kira_earring_{nm}", bm, (sx*0.168,0.010,HEADC-0.035), MCYAN)
 
-# ---- face on skull front (-0.125): anime eyes = 26% of head width, eye line mid ----
-EYEZ=HEADC-0.010
+# ---- MESH-EYE FACE (anime): iris dominates, glint, dark lid, low eye line ----
+EYEZ=HEADC-0.022
 for sx in (-1,1):
     nm="l" if sx<0 else "r"
-    eb=ball(8,6,1)
-    for v in eb.verts: v.co.x*=0.036; v.co.y*=0.036; v.co.z*=0.042
-    add(f"kira_eye_{nm}", eb, (sx*0.050,SKULL_F+0.007,EYEZ), MEYE)     # embedded 7mm proud
-    add(f"kira_iris_{nm}", box(0.048,0.014,0.054), (sx*0.050,SKULL_F-0.030,EYEZ), MIRIS)
-    add(f"kira_brow_{nm}", box(0.046,0.010,0.008), (sx*0.052,SKULL_F-0.002,EYEZ+0.062), MHAIR)
+    ex, ey = sx*0.050, SKULL_F+0.006
+    eb=ball(10,8,1)
+    for v in eb.verts: v.co.x*=0.038; v.co.y*=0.040; v.co.z*=0.044
+    add(f"kira_eye_{nm}", eb, (ex,ey,EYEZ), MEYE)
+    disc=cyl(10,0.030,0.014); rx(disc,math.pi/2)
+    add(f"kira_iris_{nm}", disc, (sx*0.050,ey-0.034,EYEZ), MIRIS)
+    pup=cyl(8,0.013,0.012); rx(pup,math.pi/2)
+    add(f"kira_pupil_{nm}", pup, (sx*0.050,ey-0.042,EYEZ), MDARK)
+    gl=cyl(6,0.006,0.010); rx(gl,math.pi/2)
+    add(f"kira_glint_{nm}", gl, (sx*0.044,ey-0.047,EYEZ+0.016), MEYE)
+    lid=box(0.046,0.010,0.008)
+    add(f"kira_lid_{nm}", lid, (sx*0.050,ey-0.026,EYEZ+0.040), MDARK)
+    add(f"kira_brow_{nm}", box(0.044,0.010,0.008), (sx*0.052,ey-0.014,EYEZ+0.075), MHAIR)
+add("kira_mouth", box(0.028,0.010,0.008), (0,SKULL_F-0.001,EYEZ-0.098), MMAG)
+add("kira_lip", box(0.020,0.008,0.005), (0,SKULL_F-0.005,EYEZ-0.110), MLIGHT)
 bm=cone(4,0.011,0.002,0.022); rx(bm,math.radians(90))
-add("kira_nose", bm, (0,SKULL_F-0.004,EYEZ-0.060), MSKIN)
-add("kira_mouth", box(0.030,0.010,0.007), (0,SKULL_F-0.001,EYEZ-0.108), MMAG)
+add("kira_nose", bm, (0,SKULL_F-0.004,EYEZ-0.052), MSKIN)
+for sx in (-1,1):
+    bm=cone(6,0.055,0.005,0.030); rx(bm,math.radians(-90))
+    add(f"kira_bust_{'l' if sx<0 else 'r'}", bm, (sx*0.055,TORSO_F-0.012,1.150), MDARK)
 
 # ================= presentation =================
 for nm,rotv,e,sz in (("kira_key",(50,0,-25),3.2,1.0),
