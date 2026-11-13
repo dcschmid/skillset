@@ -33,6 +33,11 @@ later ops work on clean data.
 
 - Spend triangles on silhouette and identity features; save them on surfaces
   never seen in gameplay framing.
+- **Connected geometry rule:** every part must overlap its neighbour by
+  >=8mm along the assembly chain (limb into torso, sleeve into shoulder,
+  shell over shell). A deliverable that reads as floating primitives fails
+  regardless of score — rebuild parametrically with one skeleton instead of
+  editing pieces incrementally.
 - A bevel that catches a highlight is worth 50 tris; a subdivision of a flat
   panel is worth 0.
 - Hard edges are a design tool: shade flat where the reference shows a facet,

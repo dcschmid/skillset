@@ -59,3 +59,11 @@ cut torso/limb loops first, face loops last.
 - Asymmetric eyes from modeling in a rotated pose (model in neutral, +Y facing).
 - Hair as an unedited icosphere sitting on the head.
 - A "handsome angle" hero shot substituting for the front/side/back gate.
+
+## Method ceiling (honest scoring)
+
+Primitive chains (ball+box+cyl) bound the face at readable-but-simple:
+dot eyes, flat planes. That is a floor of ~60-70 against a painterly
+reference, not 90+. Reference-true anime eyes need mesh operations
+(boolean sockets, inset+skill, or shape keys) or a documented higher
+budget. Score must cite the actual render: feature-present != face-matching.
