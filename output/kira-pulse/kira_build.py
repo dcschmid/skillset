@@ -175,23 +175,48 @@ for sx in (-1,1):
     bm=cyl(8,0.056,0.058); ry(bm,math.pi/2)
     add(f"kira_earring_{nm}", bm, (sx*0.168,0.010,HEADC-0.035), MCYAN)
 
-# ---- MESH-EYE FACE (anime): iris dominates, glint, dark lid, low eye line ----
+# ---- FACE ROUND 2: boolean eye sockets in the skull, recessed iris ----
+# anime eye = dark socket rim (lid liner) + amber iris 8mm BEHIND skin plane
 EYEZ=HEADC-0.022
+head_obj=bpy.data.objects["kira_head"]
+head_obj.data.materials.append(MDARK)          # slot 1 = socket walls
+cutters=[]
 for sx in (-1,1):
     nm="l" if sx<0 else "r"
     ex, ey = sx*0.050, SKULL_F+0.006
-    eb=ball(10,8,1)
-    for v in eb.verts: v.co.x*=0.038; v.co.y*=0.040; v.co.z*=0.044
-    add(f"kira_eye_{nm}", eb, (ex,ey,EYEZ), MEYE)
-    disc=cyl(10,0.030,0.014); rx(disc,math.pi/2)
-    add(f"kira_iris_{nm}", disc, (sx*0.050,ey-0.034,EYEZ), MIRIS)
-    pup=cyl(8,0.013,0.012); rx(pup,math.pi/2)
-    add(f"kira_pupil_{nm}", pup, (sx*0.050,ey-0.042,EYEZ), MDARK)
-    gl=cyl(6,0.006,0.010); rx(gl,math.pi/2)
-    add(f"kira_glint_{nm}", gl, (sx*0.044,ey-0.047,EYEZ+0.016), MEYE)
-    lid=box(0.046,0.010,0.008)
-    add(f"kira_lid_{nm}", lid, (sx*0.050,ey-0.026,EYEZ+0.040), MDARK)
+    # socket cutter: vertical-ellipse cylinder along Y, open front at skin-25mm
+    cut=cyl(10,0.034,0.075); rx(cut,math.pi/2)
+    for v in cut.verts: v.co.x*=0.88           # vertical ellipse (anime)
+    co=add(f"kira_cut_{nm}", cut, (ex,SKULL_F-0.012,EYEZ), MEYE)
+    cutters.append((nm,co))
+bpy.ops.object.select_all(action="DESELECT")
+for nm,co in cutters:
+    head_obj=bpy.data.objects["kira_head"]
+    bpy.context.view_layer.objects.active=head_obj
+    mod=head_obj.modifiers.new("bool","BOOLEAN"); mod.operation="DIFFERENCE"
+    mod.object=co; mod.solver='EXACT'
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    bpy.data.objects.remove(co,do_unlink=True)
+# mark socket cavity: walls/back face NOT frontward, inside ellipse window
+me=bpy.data.objects["kira_head"].data
+lz=EYEZ-HEADC
+for p in me.polygons:
+    if p.normal.y>-0.5 and abs(p.center.x)<0.095 and abs(p.center.z-lz)<0.052 \
+       and p.center.y<-0.100:
+        p.material_index=1
+for sx in (-1,1):
+    nm="l" if sx<0 else "r"
+    ex, ey = sx*0.050, SKULL_F+0.006
+    disc=cyl(10,0.028,0.010); rx(disc,math.pi/2)
+    add(f"kira_iris_{nm}", disc, (sx*0.050,SKULL_F-0.006,EYEZ), MIRIS)
+    pup=cyl(8,0.012,0.010); rx(pup,math.pi/2)
+    add(f"kira_pupil_{nm}", pup, (sx*0.050,SKULL_F-0.013,EYEZ), MDARK)
+    gl=cyl(6,0.005,0.008); rx(gl,math.pi/2)
+    add(f"kira_glint_{nm}", gl, (sx*0.044,SKULL_F-0.018,EYEZ+0.014), MEYE)
     add(f"kira_brow_{nm}", box(0.044,0.010,0.008), (sx*0.052,ey-0.014,EYEZ+0.075), MHAIR)
+    # side hair locks framing the cheeks (overlap hair shell + face edge)
+    lock=box(0.020,0.030,0.075)
+    add(f"kira_lock_{nm}", lock, (sx*0.108,-0.098,EYEZ-0.030), MHAIR)
 add("kira_mouth", box(0.028,0.010,0.008), (0,SKULL_F-0.001,EYEZ-0.098), MMAG)
 add("kira_lip", box(0.020,0.008,0.005), (0,SKULL_F-0.005,EYEZ-0.110), MLIGHT)
 bm=cone(4,0.011,0.002,0.022); rx(bm,math.radians(90))
@@ -199,6 +224,9 @@ add("kira_nose", bm, (0,SKULL_F-0.004,EYEZ-0.052), MSKIN)
 for sx in (-1,1):
     bm=cone(6,0.055,0.005,0.030); rx(bm,math.radians(-90))
     add(f"kira_bust_{'l' if sx<0 else 'r'}", bm, (sx*0.055,TORSO_F-0.012,1.150), MDARK)
+    # flank facet strips: angled light plates catching rim light (armor chamfer)
+    f=box(0.008,0.060,0.150)
+    add(f"kira_flank_{'l' if sx<0 else 'r'}", f, (sx*0.205,0.010,1.100), MDARK)
 
 # ================= presentation =================
 for nm,rotv,e,sz in (("kira_key",(50,0,-25),3.2,1.0),

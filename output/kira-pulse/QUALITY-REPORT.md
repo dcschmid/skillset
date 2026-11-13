@@ -1,4 +1,31 @@
-# Quality Report — kira-pulse (Treiber, fahrer02) — Stand 3 (Mesh-Augen)
+# Quality Report — kira-pulse (Treiber, fahrer02) — Stand 4 (Boolean-Chirurgie)
+
+## Stand 4 — Mesh-Chirurgie in der Pipeline (Nutzer: „mach weiter")
+
+Boolean DIFFERENCE (EXACT-Solver) auf dem Schädel: zwei Auge-Höhlen.
+Erste echte Mesh-Operation in dieser Pipeline — nicht mehr nur Kettenbau.
+Drei Debug-Runden needed (Modifier-Apply still, then p.center war local,
+then Normale statt Tiefe): 12 dunkle Höhlenwand-Faces = Lidrand/Innenecke.
+Bernstein-Iris sitzt jetzt 6 mm HINTER der Haut, dunkle Pupille, Glanzpunkt,
+Wangen-Fransen, Facettenstreifen an den Torsoflanken.
+1642 Tris (weniger als Stand 3 — die Höhlen ersetzen aufgeklebte Kugeln).
+validate WARNING (unverändert beabsichtigt) · GLB 122 KB · Reimport PASS
+1642→1642.
+
+Bildvergleich: Augen liegen jetzt in der Kopfoberfläche (tiefe, weicherer
+Übergang als aufgeklebte Scheibe) — Richtung Referenz (große weiche
+Bernstein-Augen), Restdistanz bleibt: Referenz-Augen sind höher/weicher,
+Höhlenkanten hart (low-poly), Wangenfransen blockiger als gemalt.
+
+Ehrlicher Score: **72/100** (Stand 3: 70 → +2 dokumentiert: Augentiefe/
+Lidrand; Identität bleibt der Treiber). Die Methodengrenze (face-modeling.md
+„Method ceiling") bleibt: weiche Lidkonturen brauchen Skulpt/Shape-Keys auf
+höherem Budget — die Boolesche Chirugie hat die Decke von 70 auf ~74 gehoben,
+nicht durchbrochen. 90+ erfordert die nächste Baumethode (Skinning/Mesh-Edit
+über Primitivgrenzen), dokumentiert und erreichbar, aber nicht in dieser
+Methode erreichbar erfunden.
+
+## Stand 3 (historisch)
 
 ## Stand 3 — Mesh-Ebene Gesichtsrunde (Nutzer: „Dann mach das bitte")
 

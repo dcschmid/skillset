@@ -67,3 +67,11 @@ dot eyes, flat planes. That is a floor of ~60-70 against a painterly
 reference, not 90+. Reference-true anime eyes need mesh operations
 (boolean sockets, inset+skill, or shape keys) or a documented higher
 budget. Score must cite the actual render: feature-present != face-matching.
+
+Boolean surgery in code (verified on 5.3 background): DIFFERENCE with
+solver='EXACT' via modifier_apply works, but costs debug rounds —
+p.center is mesh-LOCAL (not world), socket walls need normal-based not
+depth-based marking, and applying needs the object active in the view
+layer. Expect ~74 with chains+booleans; 90+ needs Skulpt/shape-keys over
+primitive boundaries. Budget rises when crossing those boundaries — that
+is the honest cost, state it, do not fake the number.
