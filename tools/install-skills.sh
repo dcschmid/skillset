@@ -20,10 +20,12 @@ set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MANIFEST="$REPO/.installed-manifest"
+# Serialize all manifest and link mutations across both commands.
+command -v flock >/dev/null || { echo "error: flock is required" >&2; exit 1; }
+exec 9>"$MANIFEST.lock"
+flock -x 9
 TARGETS=("$HOME/.claude/skills" "$HOME/.agents/skills")
 SKILLS_SRC="$REPO/skills"
-
-touch "$MANIFEST"
 
 die() { echo "error: $*" >&2; exit 1; }
 
@@ -34,7 +36,7 @@ link_skill() { # $1 = skill dir, $2 = target root
   if [[ -L "$dst" ]]; then
     local cur; cur="$(readlink -f "$dst")"
     if [[ "$cur" == "$src" ]]; then
-      printf '%s\t%s\n' "$name" "$2" >> "$MANIFEST.tmp"
+      printf '%s\t%s\n' "$name" "$2" >> "$MANIFEST_TMP"
       echo "ok      $name -> ${2}  (already linked)"
       return 0
     fi
@@ -46,7 +48,7 @@ link_skill() { # $1 = skill dir, $2 = target root
   fi
 
   ln -s "$src" "$dst"
-  printf '%s\t%s\n' "$name" "$2" >> "$MANIFEST.tmp"
+  printf '%s\t%s\n' "$name" "$2" >> "$MANIFEST_TMP"
   echo "installed $name -> ${2}"
 }
 
@@ -67,15 +69,17 @@ fi
 
 rc=0
 touch "$MANIFEST"
-cp "$MANIFEST" "$MANIFEST.tmp"
+MANIFEST_TMP=$(mktemp "$MANIFEST.tmp.XXXXXX")
+trap 'rm -f "$MANIFEST_TMP"' EXIT
+cp "$MANIFEST" "$MANIFEST_TMP"
 for name in "${requested[@]}"; do
   for tgt in "${TARGETS[@]}"; do
     link_skill "$SKILLS_SRC/$name" "$tgt" || rc=1
   done
 done
 
-sort -u "$MANIFEST.tmp" -o "$MANIFEST"
-rm -f "$MANIFEST.tmp"
+sort -u "$MANIFEST_TMP" -o "$MANIFEST_TMP"
+mv "$MANIFEST_TMP" "$MANIFEST"
 
 echo "manifest: $MANIFEST"
 exit $rc

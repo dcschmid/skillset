@@ -763,6 +763,10 @@ i18n and SEO gates" — which skills, in which order, why.
 
 Verify: `python3 skills/skill-orchestrator/tests/test_orchestrator.py`
 
+This suite also validates collection metadata with the shared validator.
+Static audits award at most 5/15 test points for test structure; test
+execution and behavior remain NOT RUN and earn no points until verified.
+
 ---
 
 Every skill additionally carries `references/` deep docs (5–27 files each),
@@ -783,6 +787,10 @@ before anything is linked. Installed links are recorded in
 `.installed-manifest` (`<skill-name><TAB><target-root>` per line); the
 uninstaller trusts only that manifest and keeps entries for skills that
 remain installed.
+
+Installer and uninstaller require `flock`, share a repository lock, and
+replace the manifest atomically. Installer tests use a temporary repository
+and leave the live installation manifest untouched.
 
 Verify what is installed: `cat .installed-manifest` (untracked, local state).
 

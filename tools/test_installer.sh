@@ -6,6 +6,15 @@ set -uo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 : "${TEST_HOME:?set TEST_HOME to a scratch dir}"
+TEST_REPO=$(mktemp -d)
+trap 'rm -rf "$TEST_REPO"' EXIT
+mkdir -p "$TEST_REPO/tools" "$TEST_REPO/skills"
+cp "$REPO/tools/install-skills.sh" "$REPO/tools/uninstall-skills.sh" "$TEST_REPO/tools/"
+for name in lowpoly-reference-to-blender human-writing; do
+  mkdir -p "$TEST_REPO/skills/$name"
+  printf '%s\n' 'fixture' > "$TEST_REPO/skills/$name/SKILL.md"
+done
+REPO="$TEST_REPO"
 export HOME="$TEST_HOME"
 CLAUDE="$HOME/.claude/skills"
 CODEX="$HOME/.agents/skills"
@@ -85,6 +94,28 @@ bash "$REPO/tools/install-skills.sh" "$SKILL" >/dev/null 2>&1
 cut -f1 "$MANIFEST" | sort -u > "$MANIFEST.tmp" && mv "$MANIFEST.tmp" "$MANIFEST"
 bash "$REPO/tools/uninstall-skills.sh" >/dev/null 2>&1
 t "legacy.uninstall_works" '[ ! -e "$CLAUDE/'"$SKILL"'" ] && [ ! -e "$CODEX/'"$SKILL"'" ] && [ ! -f "$MANIFEST" ]'
+
+# 10. concurrent installers retain both skills and a valid manifest.
+clean
+bash "$REPO/tools/install-skills.sh" "$SKILL" >/dev/null 2>&1 &
+pid_first=$!
+bash "$REPO/tools/install-skills.sh" "$SECOND" >/dev/null 2>&1 &
+pid_second=$!
+wait "$pid_first"; first_rc=$?
+wait "$pid_second"; second_rc=$?
+t "parallel.install_success" "[ $first_rc -eq 0 ] && [ $second_rc -eq 0 ]"
+t "parallel.manifest_complete" '[ "$(wc -l < "$MANIFEST")" -eq 4 ]'
+t "parallel.links_complete" '[ -L "$CLAUDE/$SKILL" ] && [ -L "$CODEX/$SECOND" ]'
+# The same lock must also serialize uninstall with install.
+bash "$REPO/tools/uninstall-skills.sh" "$SKILL" >/dev/null 2>&1 &
+pid_first=$!
+bash "$REPO/tools/install-skills.sh" "$SECOND" >/dev/null 2>&1 &
+pid_second=$!
+wait "$pid_first"; first_rc=$?
+wait "$pid_second"; second_rc=$?
+t "parallel.mixed_success" "[ $first_rc -eq 0 ] && [ $second_rc -eq 0 ]"
+t "parallel.mixed_manifest" '[ "$(wc -l < "$MANIFEST")" -eq 2 ] && [ ! -L "$CLAUDE/$SKILL" ] && [ -L "$CODEX/$SECOND" ]'
+t "parallel.no_temp_left" '! compgen -G "$MANIFEST.tmp.*" >/dev/null'
 
 rm -rf "$FOREIGN"
 echo "== installer tests: $pass pass, $fail fail"

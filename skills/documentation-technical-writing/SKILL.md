@@ -1,20 +1,7 @@
 ---
 name: documentation-technical-writing
 description: >
-    Universal documentation engineering for ANY project (web, Astro/React/Next,
-    Node/Python/Rust backends, REST/GraphQL/gRPC/event APIs, databases, CLIs,
-    desktop/mobile, Godot/Defold games, Blender pipelines, AI services, Docker/
-    Linux infra, monorepos): CREATE READMEs, API docs, architecture docs, ADRs,
-    developer guides, troubleshooting, tutorials; AUDIT docs against real project
-    state (completeness, correctness, quality, links, secrets); FIX with P0-P4
-    priority ladder; SYNC drift after code changes; GATE with quality checks.
-    Ships zero-dep Python CLIs (scripts/docs_audit.py, docs_check.py, docs_sync.py)
-    with JSON reports, exit codes, PASS/WARN/FAIL/REVIEW_REQUIRED/NOT RUN verdicts;
-    evidence tiers VERIFIED/DOCUMENTED/PLAUSIBLE/UNKNOWN — never invented
-    endpoints, commands or versions. Docs-first changes: source edits are out of
-    scope unless asked. Language DE/EN follows the project. Use for: "create a
-    README", "document my API", "audit the docs", "sync docs after this change",
-    "write a dev guide", "is the documentation still true", "set up a docs site".
+  Documentation engineering for any project. Use to create or audit READMEs, API docs, architecture docs, ADRs, developer guides, troubleshooting and tutorials; fix documentation defects, sync drift after code changes or set up a docs site. Verify against project source, commands, links and secrets. Ships zero-dependency Python audit, check and sync CLIs with JSON reports and exit codes. Evidence tiers: VERIFIED, DOCUMENTED, PLAUSIBLE, UNKNOWN; unrun checks are NOT RUN. Source edits require an explicit request. Follow the project language (DE/EN) and existing documentation tools.
 ---
 
 # Ultimate Documentation & Technical Writing

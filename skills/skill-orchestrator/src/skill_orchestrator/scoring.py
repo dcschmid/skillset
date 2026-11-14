@@ -1,4 +1,4 @@
-"""Quality score: 100 points over 8 weighted categories.
+"""Quality score: 100 points over 7 weighted categories.
 
 Rules:
 - Points are deducted ONLY from verifiable findings (validator output).
@@ -67,11 +67,15 @@ def score_skill(skill_entry: dict, report) -> Score:
                 break
     unchecked: list[str] = []
 
-    # tests: from facts
-    tpts = CATEGORIES["tests"][0]
+    # Five points for discoverable test structure; execution and behavior
+    # each reserve five points, awarded only by a future evidence-aware runner.
+    deduct["tests"] -= 10 if skill_entry.get("has_tests") else 15
     if not skill_entry.get("has_tests"):
-        deduct["tests"] -= tpts
-        unchecked.append("tests: skill ships no tests/ — runtime behavior UNCHECKED")
+        unchecked.append("tests.structure: no tests/ directory")
+    unchecked.extend([
+        "tests.execution: NOT RUN by static audit (0/5)",
+        "tests.behavior: NOT RUN by static audit (0/5)",
+    ])
     # maintainability: body size vs references split (repo rule ~150 lines spine)
     mpts = CATEGORIES["maintainability"][0]
     body_lines = skill_entry.get("body_lines", 0)

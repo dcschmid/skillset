@@ -59,7 +59,9 @@ snapshot (`--save` to store a baseline).
 **Compare two skills:** `overlap --skill a --skill b`.
 
 **Repair a skill:** `fix --skill X` (read-only diff) → review →
-`fix --skill X --apply` → re-audit. Revert: `git checkout -- skills/X/…`.
+`fix --skill X --apply` → re-audit. Applied fixes preserve pre-edit backups, including uncommitted work.
+Use `fixer.rollback(result)` in reverse application order; changed outputs
+are left untouched for manual reconciliation.
 
 **Routing plan:** `route "Erstelle eine barrierefreie Astro-Website"` →
 selection + reasons + order + gates + rejected-with-reasons.
@@ -78,7 +80,7 @@ references/compatibility.md  profiles × hosts field table
 scripts/skill-orchestrator   launcher (no install needed)
 src/skill_orchestrator/      cli discovery catalog validator router overlap
                              dependencies scoring auditor evaluator fixer reporting
-tests/test_orchestrator.py   21 self-tests: python3 tests/test_orchestrator.py
+tests/test_orchestrator.py   self-tests: python3 tests/test_orchestrator.py
 pyproject.toml               optional pip install
 ```
 
@@ -95,3 +97,6 @@ pyproject.toml               optional pip install
   into any future pipeline (exit codes: 0 ok, 1 findings, 2 technical).
 - Score ≠ test: numeric grades accompany test tiers, never replace them.
 ```
+This suite also validates collection metadata with the shared validator.
+Static audits award at most 5/15 test points for test structure; test
+execution and behavior remain NOT RUN and earn no points until verified.

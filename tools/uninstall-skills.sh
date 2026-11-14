@@ -14,6 +14,10 @@ set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MANIFEST="$REPO/.installed-manifest"
+# Serialize all manifest and link mutations across both commands.
+command -v flock >/dev/null || { echo "error: flock is required" >&2; exit 1; }
+exec 9>"$MANIFEST.lock"
+flock -x 9
 DEFAULT_TARGETS=("$HOME/.claude/skills" "$HOME/.agents/skills")
 
 [[ -f "$MANIFEST" ]] || { echo "nothing installed (no manifest)"; exit 0; }
@@ -55,5 +59,8 @@ while IFS=$'\t' read -r name tgt _; do
   fi
 done < "$MANIFEST"
 
-printf '%s' "$remaining" > "$MANIFEST"
+MANIFEST_TMP=$(mktemp "$MANIFEST.tmp.XXXXXX")
+trap 'rm -f "$MANIFEST_TMP"' EXIT
+printf '%s' "$remaining" > "$MANIFEST_TMP"
+mv "$MANIFEST_TMP" "$MANIFEST"
 [[ -s "$MANIFEST" ]] && echo "manifest: $MANIFEST" || { rm -f "$MANIFEST"; echo "manifest cleared"; }

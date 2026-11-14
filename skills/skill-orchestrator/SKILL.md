@@ -40,7 +40,7 @@ skills/skill-orchestrator/scripts/skill-orchestrator doctor
 
 1. `scan` → skill-catalog. New skills appear without registration;
    symlinks resolved, cycles and broken links skipped, duplicates reported.
-2. `audit --all` → per-skill 100-point score, 8 categories, tiered findings
+2. `audit --all` → per-skill 100-point score, 7 categories, tiered findings
    (`standard`/`host`/`repo`/`unknown` — a valid Claude field is never a
    portable error). Unchecked = 0 credit, marked, never guessed. Blockers:
    security errors or invalid required metadata cap the grade regardless
@@ -66,8 +66,10 @@ Only then, with approval:
 
 - Discovery facts come from files; quality claims require the audit run.
 - A score is not a test result; report both or neither.
-- Repairs: propose → approve → apply → regression-check → targeted revert
-  (`git checkout -- <file>`) on failure.
+- Repairs: propose → approve → apply → regression-check → targeted rollback on failure. Before editing, preserve the original contents
+  of affected files (including uncommitted work). Undo only this run’s edits;
+  never use whole-file checkout/reset to discard pre-existing changes. If
+  concurrent edits prevent a safe rollback, retain them and report the conflict.
 
 Rule tables: [references/validation.md](references/validation.md) ·
 routing: [references/routing.md](references/routing.md) ·

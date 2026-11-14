@@ -1,6 +1,6 @@
 # Quality scoring — 100 points, verifiable only
 
-Eight weighted categories. Deductions come exclusively from validator
+Seven weighted categories. Deductions come exclusively from validator
 findings and discovery facts. Nothing is checked → scored 0 credit and
 listed under `unchecked` (never automatic full marks).
 
@@ -10,7 +10,7 @@ listed under `unchecked` (never automatic full marks).
 | Activation & routing | 20 | content.activation (+ description triggers) |
 | Content quality | 20 | content.* |
 | Security | 15 | security.*, secret.* |
-| Tests & reliability | 15 | `has_tests` fact (no tests → 0 + UNCHECKED) |
+| Tests & reliability | 15 | Structure: 5 for tests/; execution: 5 and behavior: 5 remain 0 / NOT RUN in static audits |
 | Maintainability | 10 | body size vs references/ split |
 | Efficiency | 5 | orphan references |
 
@@ -26,10 +26,12 @@ Severity → deduction within category: `error` full, `warn` 0.5×,
 
 A security `error` or invalid required metadata is a blocker regardless
 of total: the grade caps at Poor (≤69) and the blocker is listed verbatim.
-Reproducing this repo's truth: several skills currently exceed the 1024-char
-description limit (verified real finding, not a tool artifact) — a genuine
-standard violation the owner may or may not fix; the tool reports it, does
-not hide it.
+The shared validator checks the 1024-character description limit.
+
+Static audits reserve 5 points each for test execution and behavior but
+award neither: both are NOT RUN. A tests/ directory earns only the 5
+structural points. The maximum static score is therefore 90/100; it does
+not imply executed skill suites or behavior evals.
 
 ## Score is not a verdict
 

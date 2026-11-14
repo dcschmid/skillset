@@ -6,3 +6,6 @@ out/
 __pycache__/
 .installed-manifest
 node_modules/
+
+.installed-manifest.lock
+.installed-manifest.tmp.*

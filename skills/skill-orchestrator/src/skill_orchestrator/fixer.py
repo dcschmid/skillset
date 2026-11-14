@@ -3,12 +3,13 @@
 Applied ONLY with explicit --apply. Never deletes skills, never merges
 large content, never touches global config, never installs, never
 commits. Every applied fix is a minimal textual edit, reversible via
-git (repo is the backup — see AGENTS.md)."""
+an exact pre-edit backup, including uncommitted changes."""
 
 from __future__ import annotations
 
 import difflib
 import re
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -104,9 +105,22 @@ def apply(root, fixes: list[Fix]) -> list[dict]:
                 results.append({"skill": f.skill, "applied": False,
                                 "why": "stale anchor"})
                 continue
-            path.write_text(text.replace(f.old, f.new, 1), encoding="utf-8")
+            updated = text.replace(f.old, f.new, 1)
+            backup_root = Path(root) / ".artifacts/skill-orchestrator/backups"
+            backup_root.mkdir(parents=True, exist_ok=True)
+            backup = Path(tempfile.mkdtemp(prefix="fix-", dir=backup_root))
+            original = path.read_bytes()
+            (backup / "before").write_bytes(original)
+            (backup / "after").write_bytes(updated.encode("utf-8"))
+            if path.read_bytes() != original:
+                results.append({"skill": f.skill, "applied": False,
+                                "why": "file changed before write"})
+                continue
+            path.write_bytes(updated.encode("utf-8"))
             results.append({"skill": f.skill, "applied": True,
-                            "kind": f.kind, "revert": f"git checkout -- {path}"})
+                            "kind": f.kind, "path": str(path.resolve()),
+                            "backup": str(backup.resolve()),
+                            "revert": "Use rollback(result); concurrent edits are preserved"})
         except OSError as exc:
             results.append({"skill": f.skill, "applied": False,
                             "why": str(exc)})
@@ -119,3 +133,18 @@ def _resolve_skill_file(root, f: Fix) -> Path:
     if d is None:
         raise FileNotFoundError(f.skill)
     return d / f.file
+
+
+def rollback(result: dict) -> bool:
+    """Restore this fix's exact input only while its output is unchanged.
+
+    Roll back multiple fixes in reverse application order. A False result
+    leaves concurrent edits untouched and requires manual reconciliation.
+    """
+    if not result.get("applied"):
+        return False
+    path, backup = Path(result["path"]), Path(result["backup"])
+    if path.read_bytes() != (backup / "after").read_bytes():
+        return False
+    path.write_bytes((backup / "before").read_bytes())
+    return True

@@ -1,21 +1,7 @@
 ---
 name: backend-api-engineering
 description: >
-  Universal backend & API engineering for ANY stack and ANY project age (Node/Fastify/
-  NestJS/Express/Hono, Astro endpoints, Next.js handlers, Bun/Deno; Python FastAPI/Django/
-  DRF/Flask; Go, Rust Axum/Actix, Spring Boot, Ktor, ASP.NET Core, Laravel/Symfony;
-  PostgreSQL/MySQL/SQLite, MongoDB/Redis/search/vector; REST/GraphQL/gRPC/WebSocket/SSE).
-  Modes: CREATE new backends, AUDIT existing ones, FIX real bugs, OPTIMIZE queries/APIs/
-  latency, implement AUTH (sessions/OAuth/OIDC/JWT/RBAC/ABAC/IDOR checks), engineer
-  DATABASE schemas and safe MIGRATIONS, design ARCHITECTURE, prepare DEPLOY, VERIFY with
-  tests. Profiles the project first, reuses its stack, ships working code, proves every
-  claim with measurements or test output. Baselines: RFC 9457 errors, OpenAPI (tool-
-  supported version), OWASP API Security Top 10, expand-and-contract migrations,
-  baseline→change→re-measure performance. Detects and fixes (authz gaps, N+1, missing
-  indexes, unvalidated input, missing tenancy filters) instead of only reporting. Hands
-  deep security audits to ultimate-security-hardening, cross-cutting test strategy to
-  ultimate-testing-qa, generic refactors to ultimate-code-quality-refactoring — never
-  duplicates them. Unverified = NOT TESTED, never "working".
+  Backend and API engineering for new and existing projects in any stack. Use to create, audit, fix or optimize APIs, authentication, authorization, databases, migrations, architecture, background jobs and deployment. Reuse the project stack; verify changes with tests and measurements. Covers REST, GraphQL, gRPC, WebSocket, SQL and NoSQL; RFC 9457 errors, OpenAPI and expand-and-contract migrations. Hand deep security audits to ultimate-security-hardening, cross-cutting test strategy to ultimate-testing-qa and generic refactors to ultimate-code-quality-refactoring. Unverified behavior is NOT TESTED.
 ---
 
 # Backend & API Engineering (universal)

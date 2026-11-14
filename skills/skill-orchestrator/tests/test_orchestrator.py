@@ -141,6 +141,45 @@ allowed-tools: [not, a, string]
         self.assertTrue(any(p.classification == "cooperation"
                             for p in pairs), pairs)
 
+    def test_overlap_preserves_actual_owner(self):
+        from skill_orchestrator.overlap import _ownership_evidence
+        evidence = _ownership_evidence(
+            "Framework skills own architecture; accessibility owns a11y engineering; "
+            "this skill owns visual originality", "", "design-authenticity", "beta")
+        self.assertTrue(any("accessibility owns 'a11y engineering'" in e for e in evidence))
+        self.assertFalse(any("design-authenticity: owns 'a11y" in e for e in evidence))
+
+    def test_name_mention_is_not_handoff(self):
+        cat = {"skills": [
+            {"id": "alpha", "description": "Audits beta projects and owns typography", "blurb": ""},
+            {"id": "beta", "description": "Audits projects and builds typography", "blurb": ""}]}
+        pairs = analyze_pairs(cat, build_graph(cat), min_sim=0)
+        self.assertTrue(pairs)
+        self.assertFalse(any(p.classification == "cooperation" for p in pairs))
+
+    def test_unexecuted_tests_do_not_get_execution_credit(self):
+        from skill_orchestrator.scoring import score_skill
+        from skill_orchestrator.validator import ValidationReport
+        report = ValidationReport("alpha", "portable")
+        for exists, expected in ((True, 5), (False, 0)):
+            result = score_skill({"has_tests": exists}, report)
+            self.assertEqual(result.categories["tests"], expected)
+            self.assertTrue(any("tests.execution: NOT RUN" in x for x in result.unchecked))
+            self.assertTrue(any("tests.behavior: NOT RUN" in x for x in result.unchecked))
+
+    def test_collection_metadata_uses_shared_validator(self):
+        for name, skill in Discovery(ROOT.parent.parent).skills().items():
+            with self.subTest(skill=name):
+                errors = [f for f in validate_skill(skill).errors if f.check.startswith("meta.")]
+                self.assertFalse(errors, errors)
+
+    def test_description_limit(self):
+        for size, invalid in ((1024, False), (1025, True)):
+            repo = make_repo(self.tmp, {"alpha":
+                "---\nname: alpha\ndescription: " + "x" * size + "\n---\n# alpha\n"})
+            errors = validate_skill(Discovery(repo).skills()["alpha"]).errors
+            self.assertEqual(any(f.check == "meta.description.length" for f in errors), invalid)
+
     # 10 wrong activation: no trigger phrases → warn
     def test_wrong_activation(self):
         repo = make_repo(self.tmp, {"alpha": """---
@@ -232,7 +271,7 @@ homepage: https://x.dev
 
     # 18 orchestrator audits its own skill (self-reference allowed)
     def test_self_audit_runs(self):
-        audit = audit_all(Path.home() / "dev/github/skillset")
+        audit = audit_all(ROOT.parent.parent)
         self.assertIn("skill-orchestrator", audit["audits"])
 
     # profiles never cross-classify
@@ -279,6 +318,21 @@ description: Use when alpha tasks.
         self.assertIn("name: alpha", text)
         # second pass: idempotent, nothing left to fix
         self.assertEqual(propose(repo, ["alpha"]), [])
+
+    def test_rollback_preserves_uncommitted_and_concurrent_work(self):
+        from skill_orchestrator.fixer import rollback
+        repo = make_repo(self.tmp, {"alpha": VALID.format(name="alpha").replace(
+            "name: alpha", "name: wrong") + "\nUser's uncommitted note\n"})
+        path = repo / "skills/alpha/SKILL.md"
+        original = path.read_bytes()
+        results = apply(repo, propose(repo, ["alpha"]))
+        self.assertTrue(rollback(results[0]))
+        self.assertEqual(path.read_bytes(), original)
+        results = apply(repo, propose(repo, ["alpha"]))
+        path.write_text(path.read_text() + "Concurrent edit\n")
+        concurrent = path.read_bytes()
+        self.assertFalse(rollback(results[0]))
+        self.assertEqual(path.read_bytes(), concurrent)
 
     # global flags work before AND after the subcommand (argv hoisting)
     def test_cli_flag_positions(self):

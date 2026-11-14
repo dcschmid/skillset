@@ -69,3 +69,7 @@ python3 skills/skill-orchestrator/tests/test_orchestrator.py
 ```
 
 Exit 0 on PASS (fixtures-based, deterministic).
+
+This suite also validates collection metadata with the shared validator.
+Static audits award at most 5/15 test points for test structure; test
+execution and behavior remain NOT RUN and earn no points until verified.

@@ -55,7 +55,7 @@ class PairResult:
 # Known declared-responsibility split lines in this repo (verified evidence
 # lookup, matched case-insensitively against skill descriptions).
 OWNERSHIP_RX = re.compile(
-    r"(?P<owner>[a-z-]+)\s+owns?\s+(?:the\s+)?(?P<domain>[\w \-/]{3,60})",
+    r"(?<![\w'’-])(?P<owner>framework skills|this skill|[a-z][a-z-]*)\s+owns?\s+(?:the\s+)?(?P<domain>[\w \-/]{3,60})",
     re.IGNORECASE)
 
 
@@ -75,14 +75,18 @@ def analyze_pairs(catalog: dict, graph, min_sim: float = 0.08) -> list[PairResul
             collab = (a, b) in {tuple(sorted(e)) for e in graph.collaboration}
             mentions_a, mentions_b = b in sa.lower(), a in sb.lower()
 
-            if mentions_a or mentions_b:
-                # a declares scope over the other's subject => cooperation,
-                # unless both declare the same primary owner role.
+            # Only explicit responsibility clauses establish cooperation.
+            # A mere name mention (e.g. supported frameworks) proves nothing.
+            handoff = any(
+                re.search(rf"\b{re.escape(other)}\s+(?:owns?\b|scope is owned by)", text, re.I)
+                or re.search(rf"\b(?:to|handoff to|owned by)\s+{re.escape(other)}\b", text, re.I)
+                for text, other in ((sa, b), (sb, a)))
+            if handoff:
                 cls, sev = "cooperation", "none"
                 ev = _ownership_evidence(sa, sb, a, b)
                 resp = _resp_text(sa, sb, a, b)
                 if not ev:
-                    ev = [f"{a} references {b} in its description "
+                    ev = [f"{a if mentions_a else b} references {b if mentions_a else a} in its description "
                           "(scope handoff)"]
                 prop = ("documented handoff; orchestrator keeps declared "
                         "owner in charge")
@@ -121,7 +125,10 @@ def _ownership_evidence(sa: str, sb: str, a: str, b: str) -> list[str]:
     out = []
     for text, who in ((sa, a), (sb, b)):
         for m in OWNERSHIP_RX.finditer(text):
-            out.append(f"{who}: owns '{m.group('domain').strip()[:60]}'")
+            owner = m.group('owner')
+            if owner.lower() in ('this skill', 'skill'):
+                owner = who
+            out.append(f"{who}: {owner} owns '{m.group('domain').strip()[:60]}'")
     return out[:6]
 
 
