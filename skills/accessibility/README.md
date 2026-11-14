@@ -21,6 +21,22 @@ examples/README.md           patterns quick-ref
 tests/test_skill.py          validation entry (VERDICT parse)
 ```
 
+## Use (Claude Code / Codex / oh-my-pi)
+
+Install: `tools/install-skills.sh accessibility` — symlinks into
+`~/.claude/skills` (Claude Code) and `~/.agents/skills` (Codex); oh-my-pi
+loads both roots. Invoke by name:
+
+```text
+Use the accessibility skill: audit /checkout for WCAG 2.2 AA — automated axe
+gate plus keyboard/focus evidence, and list what needs manual review.
+Use the accessibility skill: build the modal keyboard-first (focus trap, ESC,
+restore focus) and prove it with the SR harness or mark the gap honestly.
+```
+
+Automated PASS ≠ conformance: reports separate automated gate, manual
+review, and screenreader evidence. Details: `USAGE.md`.
+
 ## Quick start (in any project)
 
 ```bash

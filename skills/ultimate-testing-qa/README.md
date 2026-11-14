@@ -6,6 +6,19 @@ audits, E2E (Playwright, 3 engines), unit/integration (Vitest), defect
 fix-retest loops, QA reports, CI lanes. Framework-agnostic (Astro, React,
 Next, Vue/Nuxt, Svelte, Vite, vanilla, static HTML).
 
+Host invocation — install with `tools/install-skills.sh ultimate-testing-qa`
+(symlinks into `~/.claude/skills` for Claude Code, `~/.agents/skills` for
+Codex; oh-my-pi loads both roots, Firefox-default Playwright), then invoke
+by name:
+
+```text
+Use the ultimate-testing-qa skill: equip this SvelteKit app with a test
+architecture — Vitest units, Playwright E2E for checkout, CI gates — extend
+the existing setup, never replace it.
+Use the ultimate-testing-qa skill: reproduce "form submits twice" on
+staging, fix the root cause in source, retest, report what stayed untested.
+```
+
 - Entry: `SKILL.md` (mode gate A–F + shared analyzer step)
 - Depth: `references/` (standards pins, analysis matrix, architecture,
   playwright-e2e, vitest-unit, fix-retest, reporting, ci-integration)

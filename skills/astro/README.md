@@ -29,8 +29,19 @@ product, game-site, i18n, SSR portal — with coding agents. Baseline:
 ## Use
 
 Install via repo installer (`tools/install-skills.sh` → symlinks into
-`~/.claude/skills` + `~/.agents/skills`). Any Astro task in an agent session
-triggers it; references load on demand.
+`~/.claude/skills` (Claude Code) + `~/.agents/skills` (Codex); oh-my-pi
+loads both roots). Any Astro task in an agent session triggers it; explicit
+invocation stays deterministic:
+
+```text
+Use the astro skill: this marketing site ships 400 KB of JS on the landing
+page — find the islands that should be static and cut hydration, keep Actions
+working.
+Use the astro skill: migrate Content Collections config to the Content Layer
+without breaking routes; show the diff and the verification command.
+```
+
+References load on demand; `USAGE.md` carries the full host guide.
 
 ```bash
 python3 tests/test_skill.py                       # skill self-check (STATIC)

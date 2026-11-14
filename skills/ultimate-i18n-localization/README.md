@@ -5,9 +5,14 @@ guards multilingual setups for web frameworks and games. The engine is a
 zero-dependency Node CLI; everything else is progressive-disclosure docs.
 
 ## Activate (skill) vs run (commands)
-- Skill: reference `ultimate-i18n-localization` in a prompt ("Mach dieses
-  Projekt mehrsprachig", "Führe einen i18n-Audit durch", "Lokalisiere dieses
-  Godot-Spiel"). The agent follows SKILL.md's loop.
+- Skill: reference `ultimate-i18n-localization` in a prompt from Claude
+  Code, Codex, or oh-my-pi ("Mach dieses Projekt mehrsprachig", "Führe einen
+  i18n-Audit durch", "Lokalisiere dieses Godot-Spiel"). The agent follows
+  SKILL.md's loop:
+  ```text
+  Use the ultimate-i18n-localization skill: audit locales/de.json vs
+  en.json parity — keys, placeholders, plurals — and fix drift additively.
+  ```
 - Commands (no registry needed, always available on the shell):
   `scripts/i18n <audit|check|fix|validate|pseudo|extract|report|plan>` and
   wrappers `scripts/i18n-audit|check|fix|extract|pseudo|report`.

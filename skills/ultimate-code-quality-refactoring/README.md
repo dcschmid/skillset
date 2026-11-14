@@ -22,7 +22,15 @@ modularity · safe refactoring · baseline comparisons · pre-merge gates.
 ## Install / activate
 
 Repo convention: symlinked by `tools/install-skills.sh` into
-`~/.claude/skills` + `~/.agents/skills` — nothing extra per skill.
+`~/.claude/skills` (Claude Code) + `~/.agents/skills` (Codex); oh-my-pi
+loads both roots — nothing extra per skill. Invoke by name:
+
+```text
+Use the ultimate-code-quality-refactoring skill: audit packages/core for
+complexity hotspots and dead code; PASS/FAIL/UNVERIFIED only, no invented scores.
+Use the ultimate-code-quality-refactoring skill: refactor the pricing module
+without changing behavior — baseline, per-step verify, evidence report.
+```
 
 ## Modes & invocation
 

@@ -28,8 +28,19 @@ engineering guidance for the **Defold** engine, baseline **1.14.1 Stable**
 ## Use
 
 Install via the repo installer (`tools/install-skills.sh`, symlinks into
-`~/.claude/skills` + `~/.agents/skills`). Then any Defold task in an agent
-session triggers it; deep docs load only on demand (progressive disclosure).
+`~/.claude/skills` (Claude Code) + `~/.agents/skills` (Codex); oh-my-pi
+loads both roots). Then any Defold task in an agent session triggers it;
+explicit invocation stays deterministic:
+
+```text
+Use the defold-development skill to add split-screen local co-op to this
+top-down shooter (Defold 1.14.1, Lua), with camera proxies and a focus plan.
+Use the defold-development skill: implement save games with versioned schema
+migration for this roguelike, non-destructive on old saves.
+```
+
+Deep docs load only on demand (progressive disclosure); `USAGE.md` carries
+the full host guide.
 
 Self-check:
 
