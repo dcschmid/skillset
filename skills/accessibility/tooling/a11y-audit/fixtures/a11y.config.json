@@ -1,0 +1,29 @@
+{
+  "routes": [
+    {
+      "name": "dialog",
+      "url": "DIALOG_URL",
+      "scenarios": [
+        {
+          "name": "open-dialog-edit-save",
+          "steps": [
+            { "click": "#open" },
+            { "expect": "#dlg-title" },
+            { "fill": ["#name", "Ada Lovelace"] },
+            { "press": "Tab" },
+            { "press": "Enter" },
+            { "expect": "#status" }
+          ]
+        },
+        {
+          "name": "open-escape-closes",
+          "steps": [
+            { "click": "#open" },
+            { "expect": "#dlg-title" },
+            { "press": "Escape" }
+          ]
+        }
+      ]
+    }
+  ]
+}

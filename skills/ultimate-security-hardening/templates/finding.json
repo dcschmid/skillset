@@ -1,0 +1,19 @@
+{
+  "id": "SEC-000",
+  "severity": "HIGH",
+  "category": "A01 Broken Access Control",
+  "component": "src/routes/items.ts:getItem",
+  "location": "src/routes/items.ts:42",
+  "description": "Handler resolves item by client-supplied id without owner predicate.",
+  "evidence": "db.item.findUnique({where:{id}}) — no principal filter; route is authed, not scoped",
+  "cwe": "CWE-639",
+  "owasp": "A01",
+  "risk": { "likelihood": "high-unauth-id-iteration", "impact": "cross-user-read", "kev": false, "epss": null },
+  "status": "Confirmed",
+  "fix_status": "FIXED",
+  "fix_class": "SAFE AUTO-FIX",
+  "fix_summary": "owner-scoped findMany with ownerId predicate",
+  "test": "tests/security/item-owner-scope.test.ts",
+  "rescan": "clean 2026-11-14",
+  "residual_risk": "none-known"
+}

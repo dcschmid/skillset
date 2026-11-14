@@ -1,0 +1,40 @@
+# github-actions-qa.yml — additive QA lane (adapt commands to the project's
+# package manager and scripts; existing pipelines keep their contracts).
+# Placeholders: PM=npm|pnpm|yarn|bun, UNIT="vitest run", E2E="playwright test".
+name: QA
+
+on:
+  pull_request:
+  push: { branches: [main] }
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --frozen-lockfile
+      - name: unit + integration (PR: --changed)
+        run: npx vitest run --coverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: coverage, path: coverage/ }
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --frozen-lockfile
+      - uses: actions/cache@v4
+        with: { path: ~/.cache/ms-playwright, key: pw-${{ runner.os }}-v1 }
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - name: journeys, three engines
+        run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-report, path: |
+            playwright-report/
+            test-results/ }

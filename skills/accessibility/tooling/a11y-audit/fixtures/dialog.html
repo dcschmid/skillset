@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="de">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dialog-Prüfung</title></head>
+<body>
+<main id="main">
+<h1>Dialog-Prüfung</h1>
+<button id="open" type="button" onclick="document.getElementById('dlg').showModal()">Bearbeiten öffnen</button>
+<dialog id="dlg" aria-labelledby="dlg-title">
+  <h2 id="dlg-title">Datensatz bearbeiten</h2>
+  <p><label for="name">Name</label><input id="name" name="name" autocomplete="name"></p>
+  <button id="save" type="submit">Speichern</button>
+  <button id="close" type="button" onclick="document.getElementById('dlg').close()">Schließen</button>
+</dialog>
+<p aria-live="polite" id="status" role="status"></p>
+</main>
+<script>
+document.getElementById('save').addEventListener('click',()=>{
+  const s=document.getElementById('status'); s.textContent='Gespeichert.';
+  document.getElementById('dlg').close();
+});
+</script>
+</body>
+</html>

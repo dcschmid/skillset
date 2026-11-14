@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+// i18n-report — fixed-command wrapper (same options as: i18n report).
+import { main } from './lib/cli.mjs';
+process.exitCode = await main(['report', ...process.argv.slice(2)]);

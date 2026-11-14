@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Orchestrator"
+  short_description: "Discover, validate, route, and quality-manage the skillset collection"
+  default_prompt: "Use $skill-orchestrator to audit the skill collection and report the top three issues."

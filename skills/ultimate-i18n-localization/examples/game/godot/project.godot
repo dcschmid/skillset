@@ -1,0 +1,10 @@
+; Godot 4.7.2 i18n fixture (adapter probe target)
+config_version=5
+
+[application]
+config/name="i18n-fixture"
+
+[internationalization]
+locale/translations=PackedStringArray("res://locales/de.csv")
+locale/fallback="en"
+locale/translations_allow_csv_import=true

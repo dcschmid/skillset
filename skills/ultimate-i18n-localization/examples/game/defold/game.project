@@ -1,0 +1,4 @@
+[project]
+version=6
+title="i18n fixture"
+custom_resources=locales/, i18n.lua

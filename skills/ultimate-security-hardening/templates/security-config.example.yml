@@ -1,0 +1,30 @@
+# security-config.example.yml — project-local skill configuration
+# Copy into the audited project (docs/security.yml or security-config.yml)
+# to tune gates. Absent = skill defaults (strict-but-honest).
+version: 1
+audit:
+  depth: L2                 # ASVS level: L1 quick | L2 full | L3 critical
+  modules: auto             # auto-detect | explicit list [auth,authz,injection,xss,csrf,api,secrets,crypto,config,logging,deps]
+  diff_base: HEAD~0         # DIFF MODE baseline ref
+report:
+  dir: security-reports
+  formats: [md, json]       # + sarif, sbom(cyclonedx) optional
+gate:
+  block_on: [CRITICAL, HIGH]   # severities that BLOCK a release when Confirmed+open
+  allow_exceptions: true       # time-boxed, owner+expiry mandatory
+  baseline: existing           # only-new-findings fail CI (backlog reported, not reddened)
+fix:
+  auto: [SAFE AUTO-FIX]        # classes applied without asking
+  propose: [REVIEW REQUIRED]   # diffs proposed, never applied
+  escalate: [HIGH-RISK]        # plan + approval first
+  max_dependency_change: minor # never major without approval
+tools:
+  prefer: local                # local/offline first; cloud features opt-in only
+  sast: semgrep
+  allow_installs: ask          # ask | auto(never-silent) | off
+secrets:
+  mask: always                 # never values in reports/tool-output
+  history_scan: tracked-files  # + git-history on SECRET AUDIT mode
+dast:
+  targets: [http://localhost:*, http://127.0.0.1:*]  # authorized only
+  exclude_methods: [POST, PUT, PATCH, DELETE]        # unless approved

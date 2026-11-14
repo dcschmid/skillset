@@ -1,0 +1,29 @@
+# design-authenticity EXISTING-PROJECT config — OPTIONAL companion to
+# design-config.example.yaml (which stays valid for CREATE). Place as
+# design.config.yaml; validate: node scripts/validate_config.mjs [path].
+# Existing modes preserved: audit/audit_and_fix/design_modernization/
+# anti_ai_slop_cleanup/visual_regression_review select behavior, never new files.
+
+project: harbor-ferry-dashboard
+mode: audit_and_fix          # audit | audit_and_fix | design_modernization |
+                             # anti_ai_slop_cleanup | visual_regression_review
+scope:                       # selective audits — small task stays small
+  target: routes             # whole | routes | page | component | changed-files
+  routes: ["/", "/schedules", "/admin/users"]
+  viewports: [mobile, desktop]     # or: [390x844,1440x900] | mobile-only | desktop-only
+  themes: [light, dark]            # or: dark-only
+  categories: [all]                # or: [authenticity, a11y, regression, typography]
+
+project_tools:               # reuse, never reinstall
+  browser: auto              # auto | project-playwright | a11y-skill-tooling | none
+  run_command: npm run dev   # discovered default; override only if wrong
+  verify_commands: [npm run build, npm test, npm run lint]
+
+preservation:                # hard floor for SAFE auto-fix + modernization
+  must_keep: [src/lib/api/**, src/routes/auth/**, content/**, "brand logo type"]
+  token_edits: justified     # every existing-token edit needs a stated reason
+risk_ceiling: medium         # high-risk findings -> documented, not auto-applied
+fix_priorities: [P0, P1]     # P2/P3 logged; design-only brief keeps functional
+                             # P0 as documentation
+report: reports/design-authenticity-audit.md
+ignore_generated_reports: auto   # follow project git policy, never invent

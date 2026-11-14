@@ -1,0 +1,17 @@
+{
+  "$comment": "Project-tunable budgets. warn = report-only, error = CI fails. Field metrics (INP) are checked from snapshots, never faked from lab data. Sizes in KB unless noted.",
+  "rules": [
+    { "metric": "js-transfer-kb",        "warn": 170, "error": 300,  "scope": "per-route" },
+    { "metric": "css-transfer-kb",        "warn": 50,  "error": 100,  "scope": "per-route" },
+    { "metric": "image-total-kb",         "warn": 500, "error": 1000, "scope": "per-route" },
+    { "metric": "page-total-kb",          "warn": 800, "error": 1500, "scope": "per-route" },
+    { "metric": "requests",               "warn": 60,  "error": 100,  "scope": "per-route" },
+    { "metric": "lcp-ms",                 "warn": 2500, "error": 4000, "scope": "per-route", "source": "lab-or-rum" },
+    { "metric": "cls",                    "warn": 0.1,  "error": 0.25, "scope": "per-route", "source": "lab-or-rum" },
+    { "metric": "tbt-ms",                 "warn": 200,  "error": 600,  "scope": "per-route", "source": "lab" },
+    { "metric": "inp-ms",                 "warn": 200,  "error": 500,  "source": "field-or-interaction", "note": "no lab substitute; skipped without RUM/CrUX" },
+    { "metric": "ttfb-ms",                "warn": 800,  "error": 1800, "scope": "per-route" }
+  ],
+  "tolerancePct": 10,
+  "retries": 2
+}

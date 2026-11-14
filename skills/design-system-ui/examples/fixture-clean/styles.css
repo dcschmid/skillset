@@ -1,0 +1,22 @@
+/* Fixture: consistent component styles — token-only, states complete.
+   Audit over this + tokens.css must stay quiet (0 P0/P1). */
+.site-header { display: flex; gap: var(--size-4); padding: var(--size-4); align-items: center;
+  background: var(--background-secondary); border-block-end: 1px solid var(--border-default); }
+.brand { color: var(--action-primary); font-weight: 600; text-underline-offset: 0.2em; }
+.brand:focus-visible, .button:focus-visible, .input:focus-visible { outline: 2px solid var(--focus-indicator); outline-offset: 2px; }
+.content { padding: var(--size-4); display: grid; gap: var(--size-4); }
+.card { background: var(--background-primary); border: 1px solid var(--border-default);
+  border-radius: var(--size-2); padding: var(--size-4); display: grid; gap: var(--size-2); }
+.card__title { font-size: 1.25rem; line-height: 1.2; color: var(--text-primary); margin: 0; }
+.card__body { color: var(--text-muted); margin: 0; }
+.button { padding: var(--size-2) var(--size-4); border-radius: var(--size-2); border: 1px solid transparent;
+  cursor: pointer; transition: background-color var(--motion-fast); min-block-size: 2rem; }
+.button--primary { background: var(--action-primary); color: var(--background-primary); }
+.button--primary:hover { background: var(--text-muted); }
+.button:disabled { opacity: 0.5; cursor: not-allowed; }
+.form { display: grid; gap: var(--size-2); }
+.field { display: grid; gap: var(--size-1); }
+.field__label { color: var(--text-primary); }
+.input { padding: var(--size-2); border: 1px solid var(--border-default); border-radius: var(--size-2);
+  background: var(--background-primary); color: var(--text-primary); min-block-size: 2rem; }
+@media (prefers-reduced-motion: reduce) { .button { transition: none; } }

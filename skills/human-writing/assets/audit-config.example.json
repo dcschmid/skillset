@@ -1,0 +1,9 @@
+{
+  "$comment": "Reference config for website audits. The CLIs take flags; this file documents the vocabulary for wrappers/CI.",
+  "lang": "auto",
+  "crawl": { "max_pages": 25, "max_depth": 3, "delay_seconds": 0.2, "timeout_seconds": 10, "allow_private": false, "exclude": ["/admin", "/de", "/en", "/tag/"] },
+  "audit": { "min_words_to_judge": 40, "max_findings_per_page": 60, "chrome_scope": "once-per-site" },
+  "rewrite": { "mode": "dry-run", "protected": ["code", "frontmatter", "aria", "href", "slug", "canonical", "structured_data", "icu_vars", "translation_keys"] },
+  "reports": { "formats": ["markdown", "json"], "html": "escaped, no external assets" },
+  "voice_profile": null
+}

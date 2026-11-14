@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accessibility fixture — accessible components</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 16px/1.5 system-ui; margin: 2rem auto; max-width: 48rem; color: canva; text; }
+  :focus-visible { outline: 3px solid Highlight; outline-offset: 2px; }
+  .btn { padding: .5rem 1rem; }
+</style>
+</head>
+<body>
+<a href="#main">Skip to main content</a>
+<header role="banner"><nav aria-label="Main"><a href="/">Home</a> <a href="/docs">Docs</a></nav></header>
+<main id="main">
+  <h1>Accessible components reference</h1>
+  <p>Intentionally conformant: native semantics, visible focus, labelled controls.</p>
+
+  <h2>Button</h2>
+  <button class="btn" type="button">Save draft</button>
+
+  <h2>Form</h2>
+  <form>
+    <p><label for="email">Email address</label>
+    <input id="email" type="email" name="email" autocomplete="email" required
+           aria-describedby="email-help"></p>
+    <p id="email-help">We only use this for order updates.</p>
+    <p><label for="pass">Password</label>
+    <input id="pass" type="password" name="password" autocomplete="current-password"></p>
+    <button class="btn" type="submit">Sign in</button>
+  </form>
+
+  <h2>Dialog contract (native)</h2>
+  <dialog id="d"><p>Escape closes natively; focus returns to opener.</p>
+  <button type="button" onclick="document.getElementById('d').close()">Close</button></dialog>
+
+  <h2>Data table</h2>
+  <table>
+    <caption>Quarterly revenue</caption>
+    <thead><tr><th scope="col">Region</th><th scope="col">Revenue</th></tr></thead>
+    <tbody><tr><th scope="row">EMEA</th><td>42</td></tr></tbody>
+  </table>
+</main>
+<footer role="contentinfo"><p><a href="/legal">Legal</a></p></footer>
+</body>
+</html>

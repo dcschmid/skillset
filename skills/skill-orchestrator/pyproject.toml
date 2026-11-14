@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "skill-orchestrator"
+version = "1.0.0"
+description = "Discovery, validation, routing and quality system for a skillset repository"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+yaml = ["PyYAML>=6"]
+
+[project.scripts]
+skill-orchestrator = "skill_orchestrator.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

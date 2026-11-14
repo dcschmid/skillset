@@ -1,0 +1,61 @@
+openapi: "3.1.0"
+info:
+  title: "resource-api template"
+  version: "1"
+paths:
+  /resources:
+    get:
+      operationId: listResources
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            maximum: 200
+            default: 50
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: page of resources
+          headers:
+            ETag:
+              schema:
+                type: string
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+  /resources/{id}:
+    get:
+      operationId: getResource
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: resource
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+components:
+  schemas:
+    Problem:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string

@@ -5,3 +5,4 @@ out/
 .artifacts/
 __pycache__/
 .installed-manifest
+node_modules/

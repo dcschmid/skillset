@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Fixture Site — Deterministic audit target</title>
+  <meta name="description" content="A deliberately mixed fixture: good homepage so audits can detect a clean baseline and the broken sibling proves detectors fire.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="canonical" href="https://fixture.test/">
+  <link rel="alternate" hreflang="en" href="https://fixture.test/">
+  <link rel="alternate" hreflang="de" href="https://fixture.test/de/">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Fixture Site","url":"https://fixture.test/"}</script>
+</head>
+<body>
+  <nav><a href="about.html">About</a><a href="broken.html">Blog</a><a href="de/">Deutsch</a><a href="schema-broken.html">Schema test</a></nav>
+  <main>
+    <h1>Fixture Site</h1>
+    <p>This fixture exists so unit tests can prove detector behaviour without network. The content is honest and small on purpose.</p>
+    <img src="/hero.png" width="640" height="360" alt="Fixture hero image">
+    <a href="about.html">Read about the fixture</a>
+  </main>
+  <footer><a href="about.html">About</a></footer>
+</body>
+</html>

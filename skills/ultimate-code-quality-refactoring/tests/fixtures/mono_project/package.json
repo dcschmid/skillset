@@ -1,0 +1,7 @@
+{
+  "name": "multi",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "test": "node --test packages/core"
+  }
+}

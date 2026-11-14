@@ -1,0 +1,20 @@
+/* Fixture: messy storefront — intentional inconsistency corpus for ds.mjs audit.
+   Do NOT "clean up": tests assert the audit FINDS these. */
+:root { --brand: #3f5f7f; --never-used-anywhere: red; }
+.btn-primary { background: #3f5f7f; color: #fff; padding: 8px; border-radius: 6px; }
+.btn-secondary { background: #fff; color: #3f5f7f; padding: 0.5625rem; border-radius: 4px; }
+.buy-btn { background: #457b9d; padding: 7px; }
+.card { background: #fafafa; padding: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+.product-card { background: #f7f7f7; padding: 1rem; border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); }
+.muted { color: #999; } .muted-text { color: #999999; }
+h2 { font-size: 20px; line-height: 1.2; } .card h2 { font-size: 1.25rem; }
+header { padding: 0.8125rem; } main { padding: 1.0625rem; }
+a:focus { outline: none; }
+.btn-primary:hover { background: #34495e !important; }
+.card { display: block; display: flex; }
+.overlay { z-index: 10; } .modal { z-index: 100; } .toast { z-index: 9999; } .nav { z-index: 5; }
+.tooltip { background: #333; }
+transition-legacy { transition: all .3s; }
+@media (min-width: 640px) { main { padding: 1.1875rem; } }
+.brand-a { padding-inline: 1.125rem; } .brand-b { padding-inline: 0.6875rem; }
+.brand-c { margin-block: 1.3125rem; } .brand-d { gap: 0.4375rem; } .brand-e { gap: 1.5625rem; }

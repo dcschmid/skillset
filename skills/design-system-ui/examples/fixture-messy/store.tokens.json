@@ -1,0 +1,44 @@
+{
+  "$description": "Fixture: token source for the messy storefront AFTER migration. Primitives + semantics + themes; ds.mjs tokens must report 0 problems.",
+  "color": {
+    "slate-0": { "$type": "color", "$value": "#ffffff" },
+    "slate-50": { "$type": "color", "$value": "#f7f7f8" },
+    "slate-500": { "$type": "color", "$value": "#64748b" },
+    "slate-900": { "$type": "color", "$value": "#111827" },
+    "steel-100": { "$type": "color", "$value": "#d4e2ec" },
+    "steel-500": { "$type": "color", "$value": "#457b9d" },
+    "steel-700": { "$type": "color", "$value": "#2c5777" }
+  },
+  "size": {
+    "1": { "$type": "dimension", "$value": "0.25rem" },
+    "2": { "$type": "dimension", "$value": "0.5rem" },
+    "4": { "$type": "dimension", "$value": "1rem" }
+  },
+  "font": { "ui": { "$type": "fontFamily", "$value": "system-ui, sans-serif" } },
+  "motion": { "fast": { "$type": "duration", "$value": "150ms" } },
+  "background-primary": { "$type": "color", "$value": "{color.slate-0}" },
+  "background-secondary": { "$type": "color", "$value": "{color.slate-50}" },
+  "text-primary": { "$type": "color", "$value": "{color.slate-900}" },
+  "text-muted": { "$type": "color", "$value": "{color.slate-500}" },
+  "border-default": { "$type": "color", "$value": "{color.steel-100}" },
+  "action-primary": { "$type": "color", "$value": "{color.steel-500}" },
+  "focus-indicator": { "$type": "color", "$value": "{color.steel-700}" },
+  "light": {
+    "background-primary": { "$type": "color", "$value": "{color.slate-0}" },
+    "background-secondary": { "$type": "color", "$value": "{color.slate-50}" },
+    "text-primary": { "$type": "color", "$value": "{color.slate-900}" },
+    "text-muted": { "$type": "color", "$value": "{color.slate-500}" },
+    "border-default": { "$type": "color", "$value": "{color.steel-100}" },
+    "action-primary": { "$type": "color", "$value": "{color.steel-500}" },
+    "focus-indicator": { "$type": "color", "$value": "{color.steel-700}" }
+  },
+  "dark": {
+    "background-primary": { "$type": "color", "$value": "{color.slate-900}" },
+    "background-secondary": { "$type": "color", "$value": "#1f2937" },
+    "text-primary": { "$type": "color", "$value": "{color.slate-0}" },
+    "text-muted": { "$type": "color", "$value": "#94a3b8" },
+    "border-default": { "$type": "color", "$value": "#334155" },
+    "action-primary": { "$type": "color", "$value": "#7fb0d0" },
+    "focus-indicator": { "$type": "color", "$value": "#a9cde6" }
+  }
+}

@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+// i18n-extract — fixed-command wrapper (same options as: i18n extract).
+import { main } from './lib/cli.mjs';
+process.exitCode = await main(['extract', ...process.argv.slice(2)]);

@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+"""skill-orchestrator launcher — runs the CLI from the skill directory
+without installation. Documented local invocation for Claude Code/Codex."""
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+from skill_orchestrator.cli import main  # noqa: E402
+
+sys.exit(main())

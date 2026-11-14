@@ -1,0 +1,6 @@
+{
+  "navigation": { "home": "Home", "settings": "Settings" },
+  "actions": { "save": "Save", "cancel": "Cancel" },
+  "messages": { "welcome": "Welcome, {name}!", "items": "{count} items" },
+  "errors": { "notFound": "Page not found", "generic": "Something went wrong." }
+}

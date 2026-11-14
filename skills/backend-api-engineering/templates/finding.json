@@ -1,0 +1,17 @@
+{
+  "$schema_note": "one object per finding; ids F-<seq>; severities CRITICAL|HIGH|MEDIUM|LOW",
+  "id": "F-001",
+  "severity": "HIGH",
+  "area": "authorization|api|database|security|performance|reliability|testing|observability|deployment|config",
+  "file": "src/orders/routes.py::list_orders",
+  "component": "GET /orders",
+  "defect": "collection not filtered by tenant_id — cross-tenant read",
+  "evidence": "service.py L48: db.query(Order).all() — no owner scope; test fixture reproduces",
+  "root_cause": "route predates tenancy; helper can_read() exists but not called here",
+  "impact": "any authenticated user reads all tenants' orders",
+  "fix": "call scoped_repo.list_for(tenant, ...) + add authz matrix test",
+  "fix_status": "FIXED|PARTIALLY FIXED|REQUIRES REVIEW|NOT FIXED|FALSE POSITIVE",
+  "change_risk": "low|medium|high — <why>",
+  "validation": "pytest tests/test_orders_authz.py -k cross_tenant",
+  "handoff": "none|ultimate-security-hardening|ultimate-testing-qa|owner"
+}

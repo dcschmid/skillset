@@ -1,0 +1,41 @@
+/* GENERATED from ../fixture-messy/store.tokens.json by ds-tokens-build.mjs —
+   committed to keep the fixture self-contained; edit source + rebuild. */
+:root {
+  --color-slate-0: #ffffff;
+  --color-slate-50: #f7f7f8;
+  --color-slate-500: #64748b;
+  --color-slate-900: #111827;
+  --color-steel-100: #d4e2ec;
+  --color-steel-500: #457b9d;
+  --color-steel-700: #2c5777;
+  --size-1: 0.25rem;
+  --size-2: 0.5rem;
+  --size-4: 1rem;
+  --font-ui: system-ui, sans-serif;
+  --motion-fast: 150ms;
+  --background-primary: #ffffff;
+  --background-secondary: #f7f7f8;
+  --text-primary: #111827;
+  --text-muted: #64748b;
+  --border-default: #d4e2ec;
+  --action-primary: #457b9d;
+  --focus-indicator: #2c5777;
+}
+[data-theme="light"] {
+  --background-primary: #ffffff;
+  --background-secondary: #f7f7f8;
+  --text-primary: #111827;
+  --text-muted: #64748b;
+  --border-default: #d4e2ec;
+  --action-primary: #457b9d;
+  --focus-indicator: #2c5777;
+}
+[data-theme="dark"] {
+  --background-primary: #111827;
+  --background-secondary: #1f2937;
+  --text-primary: #ffffff;
+  --text-muted: #94a3b8;
+  --border-default: #334155;
+  --action-primary: #7fb0d0;
+  --focus-indicator: #a9cde6;
+}

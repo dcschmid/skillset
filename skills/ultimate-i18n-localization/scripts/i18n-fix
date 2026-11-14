@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+// i18n-fix — fixed-command wrapper (same options as: i18n fix).
+import { main } from './lib/cli.mjs';
+process.exitCode = await main(['fix', ...process.argv.slice(2)]);

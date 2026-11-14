@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+// i18n-audit — fixed-command wrapper (same options as: i18n audit).
+import { main } from './lib/cli.mjs';
+process.exitCode = await main(['audit', ...process.argv.slice(2)]);

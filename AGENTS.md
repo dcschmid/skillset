@@ -29,6 +29,8 @@ symlink, never copied, into `~/.claude/skills` (Claude Code) and
 - glTF: `io_scene_gltf2` with `export_format/export_yup/use_selection/
   export_apply` verified present.
 - Convention for all assets: **+Z up, +Y facing, +X right; 1 BU = 1 m.**
+- Godot 4.7.2-stable (`ed1daf0b`) at `~/.local/opt/godot-4.7.2/godot` (`godot`
+  on PATH); `--headless --import` / `--quit-after` verified on this machine.
 
 ## Editing rules
 
@@ -40,12 +42,20 @@ symlink, never copied, into `~/.claude/skills` (Claude Code) and
 - Quality scores cite observations; without visual comparison emit
   `VISUAL_REVIEW_REQUIRED` instead of a number.
 - Installer/uninstaller manage only symlinks they created (manifest:
-  `.installed-manifest`).
+  `.installed-manifest`, `name<TAB>target` lines). Both accept skill names to
+  install/remove individually; uninstall with no args removes all managed
+  links.
+- Every skill carries `USAGE.md` (English): host-specific invocation for
+  Claude Code, Codex, and oh-my-pi (omp), runnable examples, validation
+  command. Keep it updated when a skill's scripts or entry points change.
 
 ## Verify before commit
 
 ```bash
 blender -b --python skills/lowpoly-reference-to-blender/tests/test_e2e_pipeline.py
 python3 -m py_compile skills/*/scripts/*.py skills/*/tests/*.py
+node skills/design-system-ui/tests/run.mjs
 TEST_HOME=$(mktemp -d) bash tools/test_installer.sh
+python3 skills/godot/tests/test_skill.py
+bash skills/godot/scripts/headless_check.sh skills/godot/examples/base-project
 ```

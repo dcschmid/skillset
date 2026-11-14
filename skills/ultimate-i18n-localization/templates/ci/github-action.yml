@@ -1,0 +1,27 @@
+# i18n quality gate — drop into .github/workflows/ (adapt paths)
+# BLOCKING: invalid catalogs, missing keys, placeholder drift (failOn=HIGH).
+# NON-BLOCKING: coverage/thresholds via the report job below.
+name: i18n
+on: [pull_request]
+jobs:
+  i18n-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: i18n audit gate
+        run: |
+          node ~/skillset/skills/ultimate-i18n-localization/scripts/i18n check \
+            --root . --format json --out i18n-audit.json
+      - name: i18n report artifact
+        if: always()
+        run: |
+          node ~/skillset/skills/ultimate-i18n-localization/scripts/i18n report \
+            --root . --out i18n-report.md || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: i18n-audit, path: 'i18n-*.*' }
+  # configurable extras (add with project thresholds):
+  # - coverage floor: parse i18n-audit.json .coverage values
+  # - pseudo screenshots: run app under pseudo locale (needs browser setup)

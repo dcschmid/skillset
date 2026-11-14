@@ -1,0 +1,8 @@
+{
+  "$extends": "default.json",
+  "$comment": "Pre-release gate profile: fail on any High finding, tighter budgets, full crawl allowed.",
+  "level": 3,
+  "crawl": { "maxPages": 200, "sampleByType": false, "delayMs": 400 },
+  "failOnSeverity": "high",
+  "cwv": { "lcpMs": 2000, "inpMs": 150, "cls": 0.05, "ttfbMs": 600, "fcpMs": 1500, "tbtMs": 150 }
+}

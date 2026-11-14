@@ -1,0 +1,6 @@
+{
+  "navigation": { "home": "Startseite", "settings": "Einstellungen" },
+  "actions": { "save": "Speichern", "cancel": "Abbrechen" },
+  "messages": { "welcome": "Willkommen, {name}!", "items": "{count} Elemente", "currency": "{amount} €" },
+  "errors": { "notFound": "Seite nicht gefunden" }
+}

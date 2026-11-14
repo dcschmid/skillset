@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+// i18n-check — fixed-command wrapper (same options as: i18n check).
+import { main } from './lib/cli.mjs';
+process.exitCode = await main(['check', ...process.argv.slice(2)]);

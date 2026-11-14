@@ -1,0 +1,17 @@
+{
+  "$description": "Semantic layer template — rename values to the PROJECT's palette, keep the structure. Primitives live in primitives.tokens.json (color.blue-500 etc.); components consume ONLY this layer. Add/remove tokens with meaning need, not with variation count.",
+  "background-primary": { "$type": "color", "$value": "{color.neutral-0}" },
+  "background-secondary": { "$type": "color", "$value": "{color.neutral-50}" },
+  "surface-elevated": { "$type": "color", "$value": "{color.neutral-0}" },
+  "text-primary": { "$type": "color", "$value": "{color.neutral-900}" },
+  "text-secondary": { "$type": "color", "$value": "{color.neutral-600}" },
+  "text-muted": { "$type": "color", "$value": "{color.neutral-500}" },
+  "border-default": { "$type": "color", "$value": "{color.neutral-200}" },
+  "border-strong": { "$type": "color", "$value": "{color.neutral-400}" },
+  "action-primary": { "$type": "color", "$value": "{color.brand-500}" },
+  "action-secondary": { "$type": "color", "$value": "{color.brand-100}" },
+  "status-success": { "$type": "color", "$value": "{color.green-600}" },
+  "status-warning": { "$type": "color", "$value": "{color.amber-500}" },
+  "status-error": { "$type": "color", "$value": "{color.red-600}" },
+  "focus-indicator": { "$type": "color", "$value": "{color.brand-700}" }
+}

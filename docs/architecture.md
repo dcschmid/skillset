@@ -11,9 +11,13 @@ skillset (git, source of truth)
  └── docs/                      this guide, adding-new-skills.md
 ```
 
-Symlinks mean one edit updates both agents. The installer
-(`tools/install-skills.sh`) maintains `.installed-manifest`; the uninstaller
-trusts only that manifest.
+Symlinks mean one edit updates both agents. `tools/install-skills.sh` links
+all skills, or only the ones named on the command line
+(`install-skills.sh godot astro`); unknown names abort before any change.
+It maintains `.installed-manifest` (`<skill-name><TAB><target-root>`, one
+line per link); `tools/uninstall-skills.sh` removes only those links — all,
+or only the named skills — and keeps manifest entries for skills that stay
+installed. Legacy name-only manifest lines are still honored.
 
 ## Skill anatomy (progressive disclosure)
 

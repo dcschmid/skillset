@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+// i18n — entrypoint dispatcher for the ultimate-i18n-localization skill.
+import { main } from './lib/cli.mjs';
+process.exitCode = await main(process.argv.slice(2));

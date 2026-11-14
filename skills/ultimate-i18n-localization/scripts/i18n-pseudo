@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+// i18n-pseudo — fixed-command wrapper (same options as: i18n pseudo).
+import { main } from './lib/cli.mjs';
+process.exitCode = await main(['pseudo', ...process.argv.slice(2)]);

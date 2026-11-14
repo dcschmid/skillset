@@ -1,0 +1,4 @@
+keys,en,de
+nav/home,Home,Startseite
+actions/save,Save,Speichern
+messages/welcome,"Welcome, {name}!","Willkommen, {name}!"

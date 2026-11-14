@@ -1,0 +1,37 @@
+{
+  "$comment": "Base profile. Merge order: default.json -> profile file -> project .seo-perfomance/config.json -> CLI flags. See references/audit-methodology.md.",
+  "level": 2,
+  "crawl": {
+    "maxPages": 40,
+    "sampleByType": true,
+    "delayMs": 250,
+    "concurrency": 2,
+    "timeoutMs": 10000,
+    "retries": 1,
+    "maxBodyBytes": 524288,
+    "respectRobotsTxt": true,
+    "allowSameHostOnly": true
+  },
+  "render": {
+    "browser": "auto",
+    "note": "auto = use playwright/lighthouse if installed, else degrade to HTTP-only and mark findings as UNVERIFIED_RENDERING"
+  },
+  "cwv": {
+    "lcpMs": 2500,
+    "inpMs": 200,
+    "cls": 0.1,
+    "ttfbMs": 800,
+    "fcpMs": 1800,
+    "tbtMs": 200,
+    "speedIndexMs": 3400,
+    "percentile": 75
+  },
+  "report": {
+    "dir": ".seo-report",
+    "keepSnapshots": 12
+  },
+  "fix": {
+    "autoFixClasses": ["robots-txt", "sitemap-cleanup", "static-html-meta", "static-html-lang"],
+    "requireApprovalFor": ["redirects", "canonical-changes", "content-removal", "architecture", "framework-migration"]
+  }
+}

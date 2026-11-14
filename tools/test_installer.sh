@@ -10,6 +10,7 @@ export HOME="$TEST_HOME"
 CLAUDE="$HOME/.claude/skills"
 CODEX="$HOME/.agents/skills"
 SKILL=lowpoly-reference-to-blender
+SECOND=human-writing
 MANIFEST="$REPO/.installed-manifest"
 FOREIGN=/tmp/foreign-elsewhere-$$
 
@@ -25,7 +26,7 @@ clean
 bash "$REPO/tools/install-skills.sh" >/dev/null 2>&1
 t "install.links_claude" '[ -L "$CLAUDE/$SKILL" ]'
 t "install.links_codex"  '[ -L "$CODEX/$SKILL" ]'
-t "install.manifest"     "grep -qx $SKILL '$MANIFEST'"
+t "install.manifest"     "awk -F'\\t' -v n='$SKILL' '\$1==n' '$MANIFEST' | grep -q ."
 
 # 2. idempotent: rerun keeps links, exit 0, manifest has no dupes
 bash "$REPO/tools/install-skills.sh" >/dev/null 2>&1; rc=$?
@@ -56,6 +57,34 @@ t "uninstall.removes_claude" '[ ! -e "$CLAUDE/'"$SKILL"'" ]'
 t "uninstall.keeps_foreign_codex" "[ \"\$(readlink -f '$CODEX/$SKILL')\" = '$FOREIGN' ]"
 t "uninstall.keeps_foreign_dir"   '[ -d "$CLAUDE/unrelated-skill" ]'
 t "uninstall.clears_manifest"     "[ ! -f '$MANIFEST' ]"
+
+# 6. per-skill install: only the named skill is linked and recorded
+clean
+bash "$REPO/tools/install-skills.sh" "$SKILL" >/dev/null 2>&1
+t "single.links_named_claude"  '[ -L "$CLAUDE/$SKILL" ]'
+t "single.links_named_codex"   '[ -L "$CODEX/$SKILL" ]'
+t "single.skips_others"        '[ ! -e "$CLAUDE/$SECOND" ] && [ ! -e "$CODEX/$SECOND" ]'
+t "single.manifest_targeted"   "! awk -F'\\t' -v n='$SECOND' '\$1==n' '$MANIFEST' | grep -q . && awk -F'\\t' -v n='$SKILL' '\$1==n && NF>1' '$MANIFEST' | grep -q ."
+
+# 7. per-skill uninstall: named skill gone, other manifest entries survive
+bash "$REPO/tools/install-skills.sh" "$SECOND" >/dev/null 2>&1
+bash "$REPO/tools/uninstall-skills.sh" "$SKILL" >/dev/null 2>&1
+t "single.uninstall_named"     '[ ! -e "$CLAUDE/'"$SKILL"'" ] && [ ! -e "$CODEX/'"$SKILL"'" ]'
+t "single.keeps_other"         '[ -L "$CLAUDE/'"$SECOND"'" ] && awk -F"\t" -v n="$SECOND" "\$1==n" "$MANIFEST" | grep -q .'
+t "single.unnamed_gone_from_manifest" "! awk -F'\\t' -v n='$SKILL' '\$1==n' '$MANIFEST' | grep -q ."
+
+# 8. unknown skill name aborts before touching anything
+clean
+out=$(bash "$REPO/tools/install-skills.sh" no-such-skill 2>&1); rc=$?
+t "unknown.aborts"         "[ $rc -ne 0 ] && printf '%s' \"\$out\" | grep -q 'no such skill'"
+t "unknown.nothing_linked" '[ ! -e "$CLAUDE/'"$SKILL"'" ] && [ ! -e "$CODEX/'"$SKILL"'" ]'
+
+# 9. legacy manifest (name-only lines) is still understood by uninstall
+clean
+bash "$REPO/tools/install-skills.sh" "$SKILL" >/dev/null 2>&1
+cut -f1 "$MANIFEST" | sort -u > "$MANIFEST.tmp" && mv "$MANIFEST.tmp" "$MANIFEST"
+bash "$REPO/tools/uninstall-skills.sh" >/dev/null 2>&1
+t "legacy.uninstall_works" '[ ! -e "$CLAUDE/'"$SKILL"'" ] && [ ! -e "$CODEX/'"$SKILL"'" ] && [ ! -f "$MANIFEST" ]'
 
 rm -rf "$FOREIGN"
 echo "== installer tests: $pass pass, $fail fail"

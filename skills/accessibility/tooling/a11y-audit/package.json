@@ -1,0 +1,25 @@
+{
+  "name": "a11y-audit",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "WCAG 2.2 audit CLI (axe-core + Playwright) shipped with the accessibility skill",
+  "license": "MIT",
+  "bin": { "a11y": "./bin/a11y.mjs" },
+  "scripts": {
+    "a11y": "node bin/a11y.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node tests/run.mjs"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "axe-core": "4.14.0",
+    "playwright": "1.65.1"
+  },
+  "devDependencies": {
+    "@guidepup/guidepup": "0.40.0",
+    "@guidepup/playwright": "0.21.0",
+    "@types/node": "22.15.0",
+    "typescript": "5.9.3"
+  }
+}

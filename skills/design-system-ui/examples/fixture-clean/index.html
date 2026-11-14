@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head><meta charset="utf-8"><title>Fixture: storefront AFTER migration (FIXED target)</title>
+<link rel="stylesheet" href="tokens.css"><link rel="stylesheet" href="styles.css">
+<script>/* no-flash: read stored theme before paint */(function(){var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t;})();</script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">Store</a>
+    <button class="button button--primary" data-buy>Buy</button>
+  </header>
+  <main class="content">
+    <section class="card"><h2 class="card__title">Thing</h2><p class="card__body">description</p></section>
+    <section class="card"><h2 class="card__title">Other thing</h2><p class="card__body">description</p></section>
+    <form class="form">
+      <label class="field"><span class="field__label">Name</span><input class="input" name="name" autocomplete="name"></label>
+      <button class="button button--secondary">Submit</button>
+    </form>
+  </main>
+</body>
+</html>

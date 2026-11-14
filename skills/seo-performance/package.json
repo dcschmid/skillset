@@ -1,0 +1,14 @@
+{
+  "name": "seo-performance",
+  "version": "1.0.0",
+  "description": "Universal SEO & web performance audit skill: standalone Node stdlib auditor (crawl, technical SEO, Core Web Vitals budgets, schema.org, hreflang, budgets, CI gates, before/after compare) with optional Lighthouse/Unlighthouse/LHCI/Playwright integration. Zero runtime dependencies.",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=18.17" },
+  "scripts": {
+    "test": "node tests/run.mjs",
+    "audit": "node scripts/seo.mjs"
+  },
+  "keywords": ["seo", "performance", "core-web-vitals", "lighthouse", "audit", "agent-skill"],
+  "license": "MIT"
+}

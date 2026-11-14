@@ -1,0 +1,5 @@
+{
+  "navigation": { "home": "Home", "settings": "Settings" },
+  "actions": { "save": "Save" },
+  "messages": { "welcome": "Welcome, {username}!", "items": "{count} items", "currency": "{amount} EUR", "extraKey": "only in en" }
+}

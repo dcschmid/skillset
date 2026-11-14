@@ -1,0 +1,26 @@
+name: seo-performance
+# Skill-generated gate. Local equivalent: node <skill>/scripts/seo.mjs ci <dir>
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Skill technical audit (stdlib, no API keys)
+        run: node ~/dev/github/skillset/seo-performance/scripts/seo.mjs ci . --source-dist dist --out .seo-report
+        continue-on-error: false
+      - name: Lighthouse CI (optional — enable after budgets are real)
+        run: npx --no-install lhci autorun
+        continue-on-error: true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: seo-report, path: .seo-report }

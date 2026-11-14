@@ -1,0 +1,49 @@
+# design-authenticity project config — OPTIONAL.
+# Absence is valid: the skill runs on documented defaults. Place as
+# design.config.yaml (project root) or pass paths per invocation.
+# Validate: node scripts/validate_config.mjs [path] (node >= 18, no deps).
+
+project: riff-racers-game-menu          # free label, appears in reports
+
+# Direction: one of design-directions.md vocabulary or a short prose blend.
+# Never a template; principles are derived per product from it.
+direction: gaming + industrial, dark-first cockpit chrome
+
+brand:
+  colors_source: path/to/tokens.css     # existing token file = authority; skill
+                                        # extends, never silently replaces
+  palette:                              # only if greenfield; else omit
+    primary: "#e8542f"                  # warm signal orange (chosen: arcade)
+    neutrals: warm-dark                 # not raw gray
+  dark_mode: authored                   # authored | auto | none
+
+typography:
+  body: "Chakra Petch (subset, self-hosted, OFL)"
+  display: "Chakra Petch 700 + width axis"
+  scale: 1.2
+  note: engine bitmap font in-game; web menu mirrors metrics
+
+existing_design_system:                 # preservation contract
+  tokens: src/styles/tokens.css
+  components: src/components/ui
+  rule: improve-within; token-value edits need stated reason
+
+strictness: standard                    # light | standard | strict
+                                        # (anti-pattern engine sensitivity)
+minimum_quality: 90                     # gate target, heuristic per rubric
+allowed_effects: [state-shadows, focus-rings, themed-scanlines]
+                                        # effects OUTSIDE the list need a reason
+preferred_components: []                # project components to reuse first
+
+screenshot_testing:
+  enabled: auto                         # auto | on | off (auto = if browser exists)
+  viewports: [390x844, 768x1024, 1440x900, 1920x1080]
+  states: [light, dark, hover, focus, menu-open, dialog, form-error,
+           loading, empty, long-text, responsive-nav]
+  tool: prefer-repo                     # accessibility skill's tooling first
+
+max_refine_iterations: 2                # hard cap on auto-refine loops
+accessibility_target: WCAG2AA           # floors: AA min, AAA where realistic
+notes: |
+  Preserve: HUD radar widget markup, existing keybind screens.
+  Audience: racing players, session-based, glanceable states.

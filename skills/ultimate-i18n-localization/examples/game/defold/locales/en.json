@@ -1,0 +1,5 @@
+{
+  "menu/start": "Start",
+  "menu/settings": "Settings",
+  "hud/score": "Score: {score}"
+}

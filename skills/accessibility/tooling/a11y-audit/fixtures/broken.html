@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accessibility fixture — broken components</title>
+</head>
+<body>
+<!-- fixture intentionally contains WCAG 2.2 AA violations; used to prove the
+     audit tool detects and reports them. Each block names its target SC. -->
+<div>navigation here</div>
+
+<!-- 1.1.1 image without alt -->
+<img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+
+<!-- 1.4.3 low contrast -->
+<p style="color:#aaaaaa;background:#ffffff">This gray text on white fails 4.5:1.</p>
+
+<!-- 2.4.4 link without name + 4.1.2 div-as-button -->
+<p><a href="/somewhere"><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="></a></p>
+<div onclick="void 0" style="cursor:pointer">Click me instead of a button</div>
+
+<!-- 3.3.2 / 4.1.2 input without label (empty submit: 4.1.2) -->
+<form>
+  <input type="email" placeholder="Email address">
+  <input type="text" name="note">
+  <input type="submit" value="">
+</form>
+
+<!-- 1.3.1 heading skip -->
+<h4>Heading that skips levels after h1 (see source order)</h4>
+
+<!-- 2.4.3 tabindex positive breaks order -->
+<a href="/a" tabindex="5">Fifth? First? Unclear.</a>
+
+<!-- aria-hidden on focusable -->
+<nav aria-hidden="true"><a href="/hidden">Reachable while hidden</a></nav>
+
+<!-- AA-pass / AAA-fail probes (level separation): 5.0:1 passes 1.4.3, fails 1.4.6 -->
+<p style="color:#767676;background:#ffffff">Five-point ratio: AA passes, AAA advisory fires.</p>
+<!-- 2.4.4 AAA: same name, different destinations -->
+<p><a href="/report-q1">Quarterly report</a> · <a href="/archive/2025">Quarterly report</a></p>
+</body>
+</html>
