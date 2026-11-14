@@ -45,9 +45,10 @@ symlink, never copied, into `~/.claude/skills` (Claude Code) and
   `.installed-manifest`, `name<TAB>target` lines). Both accept skill names to
   install/remove individually; uninstall with no args removes all managed
   links.
-- Every skill carries `USAGE.md` (English): host-specific invocation for
-  Claude Code, Codex, and oh-my-pi (omp), runnable examples, validation
-  command. Keep it updated when a skill's scripts or entry points change.
+- Detailed per-skill usage lives in `README.md` (the `### \`<skill>\``
+  sections: scope, Claude Code / Codex / oh-my-pi invocation, examples, verify
+  command) — that is canonical. `skills/<name>/USAGE.md` mirrors it into the
+  symlinked folder. Keep both in sync when scripts or entry points change.
 
 ## Verify before commit
 
