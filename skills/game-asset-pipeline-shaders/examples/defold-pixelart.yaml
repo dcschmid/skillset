@@ -1,0 +1,13 @@
+# example: pixel-art 2D project on Defold (copy to project root)
+# Style contract: nearest filtering, lossless sources, no lossy resample.
+engine: defold
+engine_version: "1.14.1"          # probe game.project, don't trust this file
+art_style: pixel-art
+targets: [web, linux]
+profile: mobile
+texture_max_size: { albedo: 512 }
+compression: { albedo: none }     # pixel-art keeps lossless until engine proves codec
+quality_thresholds: { ssim_min: 0.99, pixel_diff_max_pct: 0.5 }
+auto_fix:
+  enabled: [dedupe-identical]     # repoint kept manual: import paths are engine truth
+  protect: ["**/ui/**", "*.import"]

@@ -27,7 +27,7 @@ docs/                       architecture + authoring guides
 
 ## Skills
 
-Seventeen skills. The index below is navigation only; each skill then gets
+Eighteen skills. The index below is navigation only; each skill then gets
 its own detailed section — scope, shipped automation, how to invoke it in
 Claude Code, Codex, and oh-my-pi (omp), copy-paste examples, and its own
 verify command. `skills/<name>/USAGE.md` is the same guide, mirrored into
@@ -38,6 +38,7 @@ README is the canonical copy.
 |---|---|---|
 | [lowpoly-reference-to-blender](#lowpoly-reference-to-blender) | Game dev | `blender -b --python …/tests/test_e2e_pipeline.py` |
 | [defold-development](#defold-development) | Game dev | `python3 …/tests/test_skill.py` |
+| [game-asset-pipeline-shaders](#game-asset-pipeline-shaders) | Game dev | `python3 …/tests/test_skill.py` |
 | [godot](#godot) | Game dev | `python3 …/tests/test_skill.py` |
 | [astro](#astro) | Web frameworks | `python3 …/tests/test_skill.py` |
 | [react-nextjs](#react-nextjs) | Web frameworks | `python3 …/tests/test_skill.py` |
@@ -51,6 +52,7 @@ README is the canonical copy.
 | [seo-performance](#seo-performance) | Engineering | `node …/tests/run.mjs` |
 | [design-authenticity](#design-authenticity) | Design | `python3 …/tests/test_skill.py` |
 | [design-system-ui](#design-system-ui) | Design | `node …/tests/run.mjs` |
+| [figma-source-of-truth](#figma-source-of-truth) | Design | `python3 …/tests/test_skill.py` |
 | [human-writing](#human-writing) | Writing/meta | `python3 …/tests/test_lint_text.py` |
 | [skill-orchestrator](#skill-orchestrator) | Writing/meta | `python3 …/tests/test_orchestrator.py` |
 
@@ -184,6 +186,49 @@ reload — find the root cause and fix it with a regression test.
 
 Verify: `python3 skills/godot/tests/test_skill.py` ·
 `bash skills/godot/scripts/headless_check.sh skills/godot/examples/base-project`
+
+---
+
+### `game-asset-pipeline-shaders`
+
+Technical asset pipeline between asset creation and engine runtime, engine-
+agnostic with Defold 1.14.1 + Godot 4.7.2 adapters (adapter contract extends
+to Unity/Unreal/Bevy/custom renderers, WebGL/WebGPU): material/texture/shader
+audits, glTF 2.0/GLB validation (mesh-codec vs KTX2 lanes kept separate),
+safe dry-run-first repairs with `.orig` backups, art-style-aware rules
+(pixel-art keeps lossless + nearest), disk-vs-VRAM budget reports, CI-ready
+headless gates. Owns materials/textures/shaders/export; modeling stays in
+`lowpoly-reference-to-blender`, engine APIs in `defold-development`/`godot`.
+Estimates labeled `estimated`, unrun tests reported `NOT_RUN`.
+
+Install only this skill: `tools/install-skills.sh game-asset-pipeline-shaders`
+
+- **Claude Code** (`~/.claude/skills/`): activates on asset-pipeline tasks —
+  textures, materials, shaders, glTF, export, VRAM budgets.
+- **Codex** (`~/.agents/skills/`): reference `game-asset-pipeline-shaders`
+  explicitly; modes (`audit|fix|optimize|shader|material|textures|export|
+  validate|benchmark|compare`) travel in the request, not as slash-commands.
+- **oh-my-pi**: routes from the skill list; Blender/Godot binaries back the
+  HEADLESS lanes when present.
+
+Shipped: `scripts/` — `asset_audit.py`, `gltf_validate.py`,
+`texture_analyze.py`, `material_audit.py`, `pipeline_runner.py` (mode
+dispatcher incl. validate/compare), `asset_report.py`, `tool_probe.py`,
+`blender_preflight.py` (runs inside Blender 5.3). References (12) load per
+mode; `assets/templates/asset-pipeline.yaml` is the project config.
+
+```text
+Use the game-asset-pipeline-shaders skill to audit this project's asset
+pipeline — findings by severity, no writes, report what stayed NOT_RUN.
+```
+
+```text
+Use the game-asset-pipeline-shaders skill: optimize mode on assets/textures,
+profile mobile; disk vs VRAM separately, pixel-art keeps lossless sources.
+```
+
+Verify: `python3 skills/game-asset-pipeline-shaders/tests/test_skill.py` ·
+`blender -b --python-expr "import sys; sys.path.insert(0,'skills/game-asset-pipeline-shaders/scripts'); import blender_preflight; blender_preflight.main()"`
 
 ---
 
@@ -680,6 +725,37 @@ fix, and document the token contract that prevents regressions.
 ```
 
 Verify: `node skills/design-system-ui/tests/run.mjs`
+
+---
+
+### `figma-source-of-truth`
+
+Figma-as-source-of-truth UI policy for projects that have a Figma design
+system: Figma and Code Connect decisions outrank general frontend guidance;
+implementation must not invent a competing design system. Tokens come from
+the Figma library, production components get reused, divergence is reported
+with node names — never silently redesigned. Inert without Figma:
+`design-authenticity` and `design-system-ui` stay in charge there.
+
+Install only this skill: `tools/install-skills.sh figma-source-of-truth`
+
+- **Claude Code** (`~/.claude/skills/`): activates on UI work in projects
+  with Figma files or Code Connect mappings.
+- **Codex** (`~/.agents/skills/`): name `figma-source-of-truth`.
+- **oh-my-pi**: routes from the skill list; the scope gate keeps it inert
+  without Figma.
+
+```text
+Use the figma-source-of-truth skill: build the checkout component against
+Figma node 12:340; Code Connect maps it to <CheckoutSummary>.
+```
+
+```text
+Use the figma-source-of-truth skill: our button diverges from the library —
+report the mismatch against the named nodes, do not redesign.
+```
+
+Verify: `python3 skills/figma-source-of-truth/tests/test_skill.py`
 
 ---
 

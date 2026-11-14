@@ -1,0 +1,31 @@
+# asset-pipeline.yaml — project config for game-asset-pipeline-shaders
+# Copy to project root, edit values. Scripts merge over conservative
+# defaults; unset keys NEVER block an audit. Versions: probe, don't assume.
+
+engine: null            # defold | godot | unity | unreal | bevy | custom | null=auto-detect
+engine_version: null    # probed value wins (game.project / project.godot / docs)
+art_style: null         # low-poly|high-poly|pixel-art|voxel|2d|2.5d|3d|hand-painted|toon|realistic-pbr|retro|stylized-fantasy|isometric
+targets: []             # [linux, windows, macos, web, ios, android, switch]
+profile: midrange       # low-end | integrated-gpu | midrange | high-end | mobile | web
+
+texture_max_size: {}    # per kind caps; e.g. albedo: 2048, normal: 2048, ui: 1024
+                        # pixel-art: set per-atlas; NEVER auto-downsample
+compression: {}         # per-kind codec prefs; e.g. albedo: etc2, masks: astc-6x6
+                        # only codecs the engine adapter verified (see references)
+mesh_budgets: {}        # e.g. tris_per_asset: 5000, lods: [1.0, 0.5, 0.25]
+shader_requirements: {} # e.g. max_texture_samples: 8, variants_max: 24
+
+quality_thresholds:
+  ssim_min: 0.95        # compare gate; per-project (pixel-art often 0.99)
+  pixel_diff_max_pct: 2.0
+
+auto_fix:
+  enabled:              # fix-mode applies ONLY these, dry-run first
+    - repoint-missing-texture
+    - dedupe-identical
+  protect: ["*.orig", "*.import", "**/collision*", "**/ui/**"]
+
+exclude_dirs: ["build", "dist", "*.orig", ".import"]
+reporting:
+  formats: [json, markdown]   # + html optional
+  dir: asset-reports
