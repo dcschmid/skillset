@@ -30,7 +30,7 @@ def check(name, cond, detail=""):
 
 
 # ---------- 1 structure ----------
-for p in ["SKILL.md", "README.md", "USAGE.md", "references", "tests"]:
+for p in ["SKILL.md", "README.md", "references", "tests"]:
     check(f"exists {p}", (ROOT / p).exists())
 refs = ["engineering-ladder", "modes", "audit-and-review", "simplify",
         "debt", "scenarios"]
@@ -38,7 +38,6 @@ for r in refs:
     check(f"ref {r}.md", (ROOT / "references" / f"{r}.md").is_file())
 skill = (ROOT / "SKILL.md").read_text()
 readme = (ROOT / "README.md").read_text()
-usage = (ROOT / "USAGE.md").read_text()
 bodies = {r: (ROOT / "references" / f"{r}.md").read_text() for r in refs}
 
 # no runtime cruft: the skill must ship no scripts/assets (its own rule)
@@ -131,14 +130,13 @@ for n, key in [(1, "dependency"), (2, "helper"), (3, "callers"), (4, "uplicate")
 check("no-fake-benchmarks", "not a fake benchmark" in sc.lower()
       or "nothing here is a fake benchmark" in sc.lower())
 
-# ---------- 10 README/USAGE ----------
+# ---------- 10 consolidated README ----------
 for t in ["Install", "modes", "Commands", "Examples", "collaboration",
           "limits", "Troubleshooting"]:
     check(f"README {t}", t.lower() in readme.lower())
 for t in ["Claude Code", "Codex", "oh-my-pi", "install-skills.sh"]:
-    check(f"USAGE {t}", t in usage)
+    check(f"README host usage {t}", t in readme)
 check("readme verify cmd", "tests/test_skill.py" in readme)
-check("usage mirrors readme", "tests/test_skill.py" in usage)
 
 print(f"\n{ok} checks, {fail} failed")
 print("VERDICT:", "PASS" if fail == 0 else "FAIL")

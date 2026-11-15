@@ -19,8 +19,8 @@ text = skill_md.read_text(encoding="utf-8")
 fm = text.split("---")[1] if text.startswith("---") else ""
 check("frontmatter name==dir", "name: playwright" in fm)
 check("frontmatter description", "description:" in fm)
-check("USAGE.md mirrors skill", (skill / "USAGE.md").is_file()
-      and "playwright" in (skill / "USAGE.md").read_text(encoding="utf-8"))
+check("README.md documents skill", (skill / "README.md").is_file()
+      and "playwright" in (skill / "README.md").read_text(encoding="utf-8"))
 check("stack-decoupled (no mm-* / CODEX_HOME)",
       "mm-playwright" not in text and "CODEX_HOME" not in text
       and "CODEX_HOME" not in (skill / "references/cli.md").read_text())

@@ -1,15 +1,25 @@
-# Web example
+# Audit a shop fixture with localization drift
 
-The canonical runnable example is `tests/fixtures/web-shop/` (Astro 7 layout,
-`src/locales/{de,en}.json` with deliberate drift: missing keys, placeholder
-rename `{name}`→`{username}`, en-only key). It powers the integration tests.
+The runnable test project is in `../../tests/fixtures/web-shop/`. It deliberately
+contains missing keys, a renamed `{name}` → `{username}` placeholder, and an
+English-only entry. `defaultLocale` selects German as the reference language.
+
+From the repository root:
 
 ```bash
-S=~/dev/github/skillset/skills/ultimate-i18n-localization
-node $S/scripts/i18n audit --root $S/tests/fixtures/web-shop
-# Reference locale: de (honors defaultLocale), missing-key: 2, placeholder-mismatch, coverage measured
-node $S/scripts/i18n check --root $S/tests/fixtures/web-shop   # exit 1 + VERDICT FAIL (expected drift present)
+node skills/ultimate-i18n-localization/scripts/i18n audit --root skills/ultimate-i18n-localization/tests/fixtures/web-shop
+node skills/ultimate-i18n-localization/scripts/i18n check --root skills/ultimate-i18n-localization/tests/fixtures/web-shop
 ```
-Expected findings and their meaning: see `references/troubleshooting.md`.
-A clean-project run: copy `templates/locales/*.json` into a scratch project —
-`check` exits 0 with `VERDICT PASS`.
+
+The audit should show drift. The check should return exit code 1 and FAIL
+because those errors are intentional. Do not repair this fixture in place:
+the integration tests rely on its defects.
+
+```text
+Use ultimate-i18n-localization. Explain the shop-fixture findings, then audit
+our own catalogs using German as the reference language. Report only.
+```
+
+For a clean experiment, copy `../../templates/locales/` into a separate test
+project. See [troubleshooting.md](../../references/troubleshooting.md) for finding
+interpretation and the [skill README](../../README.md) for setup and usage.

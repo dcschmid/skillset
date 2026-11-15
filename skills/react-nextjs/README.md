@@ -1,96 +1,109 @@
-# react-nextjs — universal React & Next.js development skill
+# react-nextjs
 
-Agent skill (SKILL.md format: Claude Code, Codex, any SKILL.md runner) for
-building ANY React or Next.js web project — SPA, dashboard, SaaS, e-commerce,
-blog, docs portal, realtime tool, component library, i18n site — with coding
-agents. Baselines: **React 19.3.1 · Next.js 16.4.6 · TypeScript strict ·
-React Compiler 1.0 · Node LTS 22** (probe 2026-11-14; version-gated and
-re-probed per task, never a frozen number).
+Work on React SPAs and Next.js App or Pages Router projects, including components, data flow, caching, forms, and server boundaries.
 
-## What this is / is not
+Profile: Working. Preparation: Provide the project, router, affected component, and observed behavior. Read installed versions from manifests and lockfiles.
 
-- IS: router (`SKILL.md`) + 22 references + 5 example sets + 2 working
-  read-only tools + static validator; Server/Client-boundary, caching, state,
-  security decisions with explicit criteria; measurement-backed perf/a11y/SEO.
-- IS NOT: a Next.js evangelist. Astro-with-React and Vite/React SPAs keep
-  their stack; Next.js is never forced. No industry, design system, backend,
-  or host is assumed.
+Expected result: A change within the existing stack, checked with relevant component, integration, or build commands.
 
-## Layout (progressive disclosure)
+Requirements and limits: This skill belongs to the Working profile. Private frontend work remains Astro-first under repository policy. Adapt examples to the actual React and Next.js versions.
 
-| Path | Content | Loaded |
-|---|---|---|
-| `SKILL.md` | mode gates, routing table, 12 binding rules, ship gate | on trigger |
-| `references/` | 22 deep docs — see below | per routing table |
-| `examples/` | copyable idiom snippets per module | when writing code |
-| `scripts/` | `check-versions.sh`, `audit_react_project.mjs` (read-only) | at census steps |
-| `tests/` | `test_skill.py` static validator (python3 stdlib + node parse) | CI / before commit |
+## react-nextjs: Installation and examples
 
-### References (22)
+Install from the repository root:
 
-`version-policy.md` (version gate + docs priority + feature floors) ·
-`react-core.md` · `react-modern-apis.md` · `react-compiler.md` ·
-`nextjs-app-router.md` · `nextjs-rendering.md` · `nextjs-data-caching.md` ·
-`nextjs-server-actions.md` · `typescript.md` · `architecture.md` ·
-`styling-design-systems.md` · `state-management.md` ·
-`fullstack-integration.md` · `security.md` · `accessibility.md` ·
-`performance.md` · `seo-i18n.md` · `testing.md` · `tooling.md` ·
-`deployment.md` · `migrations.md` · `agent-workflows.md`.
-
-### Examples (per module, framework-current, no external services)
-
-`react-vite/TodoList.tsx` (typed SPA state + effects) ·
-`nextjs-app-router/article-page.tsx` (async params, Suspense, metadata) ·
-`reusable-components/Button.tsx` (composition + tokens) ·
-`forms-validation/rename-form.tsx` (`useActionState` + hardened action) ·
-`testing-patterns/examples.ts` (RTL + Playwright).
-
-## Installation & activation
-
-The collection installer symlinks `skills/react-nextjs/` into
-`~/.claude/skills/` and `~/.agents/skills/` (see repo README). Activation is
-description-matched: tasks naming React, Next.js, components/hooks, App
-Router, Server Components/Actions, `use cache`, proxy.ts, web perf/a11y/
-testing/migration trigger it; unrelated backend/game tasks do not.
-
-## Use (Claude Code / Codex)
-
-```
-Use react-nextjs to add an authenticated dashboard route with cached
-article data to this Next.js app.
-Use react-nextjs to review the Server/Client split in this Vite React SPA.  ← stays Vite
+```bash
+tools/install-skills.sh react-nextjs
 ```
 
-Modes (SKILL.md Step 0): A new project · B existing project · C refactor/
-optimize · D bugfix. Each existing project starts with a version census
-(`scripts/check-versions.sh`, `node_modules/next/dist/docs/` if present).
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
 
-## Docs preference (binding order)
+```bash
+tools/install-skills.sh --claude working
+```
 
-1. `node_modules/next/dist/docs/` (version-matched, ships with installed Next)
-2. react.dev / nextjs.org/docs for the installed line
-3. release notes + migration guides · 4. official repos · 5. community (marked)
+Try these prompts in your target project:
 
-## Interop with other skills
+**Claude Code:**
 
-Independent; composable. `astro` skill owns Astro projects — React component
-rules from `react-core.md` may apply inside Astro islands without converting
-the project. Design/testing/deployment skills of the collection layer on top;
-no cross-skill imports.
+```text
+Use the react-nextjs skill. The whole table rerenders when a filter changes. Measure the cause and improve the affected data flow without changing behavior.
+```
 
-## Maintenance
+**Codex:**
 
-Re-probe baselines quarterly or on any React/Next major release
-(`references/version-policy.md` update routine): probe npm `latest`, refresh
-feature floors from official migration guides, re-run
-`python3 tests/test_skill.py`, keep the 12 binding rules in SKILL.md stable —
-new framework knowledge lands in references, not the router.
+```text
+Use the react-nextjs skill. Audit cache usage in this Next.js App Router project. Identify concrete locations and fix confirmed defects with appropriate tests.
+```
 
-## Known limitations
+**oh-my-pi:**
 
-- Static validator: validates structure/routing/invariants, not a live agent
-  run (mirrors the `astro` skill's testing level).
-- React docs do not ship in `node_modules/react` (unlike Next); react.dev is
-  the ceiling there.
-- Feature floors encode the 2026-11 stable line; verify per installed version
-  on older projects before assuming an API exists.
+```text
+Use the react-nextjs skill. Fix the form that hides server errors. Preserve existing validation and test success, invalid input, and server failure.
+```
+
+## react-nextjs: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/react-nextjs/tests/test_skill.py
+```
+
+## Files and further reading
+
+Start with [SKILL.md](SKILL.md) for the binding agent workflow. This README
+contains the usage guide, host examples, and direct tool instructions.
+
+- [references/](references/): Detailed guidance and rules.
+- [examples/](examples/): Worked examples.
+- [tests/](tests/): Self-tests and fixtures.
+
+These files are present in the skill directory. Check the relevant workflow
+or command help before running a tool directly. Helper modules are not
+standalone CLI entry points.
+
+- [audit_react_project.mjs](scripts/audit_react_project.mjs)
+- [check-versions.sh](scripts/check-versions.sh)
+
+## Run tools directly
+
+Run these examples from this skill directory, for example after
+`cd skills/react-nextjs` from the repository root. Replace `/path/...` with
+existing paths. Set up required programs before running the commands.
+
+```bash
+node scripts/audit_react_project.mjs /path/to/react-project
+```
+
+## Reference and example index
+
+- [references/accessibility.md](references/accessibility.md)
+- [references/agent-workflows.md](references/agent-workflows.md)
+- [references/architecture.md](references/architecture.md)
+- [references/deployment.md](references/deployment.md)
+- [references/fullstack-integration.md](references/fullstack-integration.md)
+- [references/migrations.md](references/migrations.md)
+- [references/nextjs-app-router.md](references/nextjs-app-router.md)
+- [references/nextjs-data-caching.md](references/nextjs-data-caching.md)
+- [references/nextjs-rendering.md](references/nextjs-rendering.md)
+- [references/nextjs-server-actions.md](references/nextjs-server-actions.md)
+- [references/performance.md](references/performance.md)
+- [references/react-compiler.md](references/react-compiler.md)
+- [references/react-core.md](references/react-core.md)
+- [references/react-modern-apis.md](references/react-modern-apis.md)
+- [references/security.md](references/security.md)
+- [references/seo-i18n.md](references/seo-i18n.md)
+- [references/state-management.md](references/state-management.md)
+- [references/styling-design-systems.md](references/styling-design-systems.md)
+- [references/testing.md](references/testing.md)
+- [references/tooling.md](references/tooling.md)
+- [references/typescript.md](references/typescript.md)
+- [references/version-policy.md](references/version-policy.md)
+- [examples/README.md](examples/README.md)
+- [examples/forms-validation/rename-form.tsx](examples/forms-validation/rename-form.tsx)
+- [examples/nextjs-app-router/article-page.tsx](examples/nextjs-app-router/article-page.tsx)
+- [examples/react-vite/TodoList.tsx](examples/react-vite/TodoList.tsx)
+- [examples/reusable-components/Button.tsx](examples/reusable-components/Button.tsx)
+- [examples/testing-patterns/examples.ts](examples/testing-patterns/examples.ts)

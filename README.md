@@ -1,1223 +1,1578 @@
 # skillset
 
-Central repository of reusable AI-agent skills for Claude Code and Codex.
-Skills are plain directories with `SKILL.md` (YAML frontmatter + workflow),
-installed into both agents via symlinks — one source, many consumers.
+Reusable skills for Claude Code, Codex, and oh-my-pi. Each skill gives an agent
+a workflow for a particular job: what to inspect first, how to proceed, and how
+to verify the result. Name the skill and describe your goal; the agent works in
+your current project using its rules and tools.
 
-Every skill follows the same contract: `SKILL.md` is the router (trigger,
-workflow, gates, routing tables); `references/` holds depth loaded on demand;
-`scripts/` holds zero-dependency (or stdlib-only) automation that runs on
-this machine; `tests/` holds static validation that exits 0 on PASS. No skill
-requires another skill to work; cross-skill handoffs are named, never load-
-bearing.
+The collection contains **27 skills** covering web development, backends, games,
+design, security, testing, and writing. These guides are for people. Each
+`SKILL.md` contains the binding agent instructions.
 
-## Layout
+## Get started
 
+Run the installer from this checkout. The shell scripts require Bash and
+`flock`; other requirements depend on the selected skill.
+
+```bash
+# Install selected skills:
+tools/install-skills.sh documentation-technical-writing human-writing
+
+# Or install the whole collection according to its profile routing:
+tools/install-skills.sh
 ```
-skills/<name>/SKILL.md      entry point + progressive-disclosure root
-skills/<name>/USAGE.md      usage guide mirrored from this README's skill section
-skills/<name>/references/   deep docs, loaded on demand
-skills/<name>/scripts/      working automation (Blender Python, system Python)
-skills/<name>/assets/       templates reused per run
-skills/<name>/tests/        runnable validation
-profiles/<project>.md       optional project overlays (never auto-applied)
-tools/                      installer / uninstaller / installer tests
-docs/                       architecture + authoring guides
+
+Open your target project in Claude Code, Codex, or oh-my-pi and enter a prompt:
+
+```text
+Use documentation-technical-writing and human-writing.
+Rewrite README.md in English for new developers.
+Check installation, start, and test instructions against the project files.
+Add a getting-started example and identify checks you could not run.
 ```
+
+This is a prompt in the client, not a terminal command. Naming the skill makes
+your intended workflow explicit. Installing it does not activate it for every
+subsequent task.
+
+## Choose a skill
+
+| Task | Start with |
+|---|---|
+| Build an Astro site | `astro` |
+| Maintain an existing React or Next.js project | `react-nextjs` |
+| Work on an API, database, or migration | `backend-api-engineering` |
+| Reproduce a problem in the browser | `playwright` |
+| Add tests or fix and retest a web bug | `ultimate-testing-qa` |
+| Audit or improve accessibility | `accessibility` |
+| Investigate SEO or loading performance | `seo-performance` |
+| Develop a visual identity, maintain tokens, or implement Figma requirements | `design-authenticity`, `design-system-ui`, `figma-source-of-truth` |
+| Build gameplay | `godot` or `defold-development` |
+| Work on 3D assets, textures, or audio | `lowpoly-reference-to-blender`, `game-asset-pipeline-shaders`, `game-audio-sound-design` |
+| Review, simplify, or harden code | `ultimate-code-review`, `ultimate-code-quality-refactoring`, `lean-engineering`, `ultimate-security-hardening` |
+| Address failing CI or review comments | `ci-triage`, `review-followup` |
+| Check security-relevant changes with Semgrep | `semgrep-security` |
+| Add or validate localization | `ultimate-i18n-localization` |
+| Improve documentation or prose | `documentation-technical-writing`, `human-writing` |
+| Inspect an agent runtime or the skill collection | `agent-harness-engineering`, `skill-orchestrator` |
+
+Choose the skill needed for the current step. Add another when the task calls
+for its expertise; you do not need to load an entire group.
+
+## Installation and profiles
+
+The installer creates symlinks to this repository rather than copying files.
+Edits here become visible through those links. Keep the checkout in place
+while using the installation.
+
+Routing is defined in [tools/profile-map.tsv](tools/profile-map.tsv). Skills
+without an entry default to both profiles.
+
+| Scope | Persistent target directories |
+|---|---|
+| `both` | `~/.claude/skills`, `~/.agents/skills`, `~/.omp/profiles/private/agent/skills`, `~/.omp/profiles/working/agent/skills` |
+| `private` | `~/.codex/skills`, `~/.omp/profiles/private/agent/skills` |
+| `working` | `$MM_CODEX_WORKING_HOME/skills`, `~/.omp/profiles/working/agent/skills` |
+
+Without `MM_CODEX_WORKING_HOME`, the installer uses
+`$MM_STACK_DATA_HOME/codex-working-home/skills`. Without `MM_STACK_DATA_HOME`,
+the stack root is `${XDG_DATA_HOME:-$HOME/.local/share}/frontend-ai-stack`.
+These variables come from the existing profile setup or an explicit override.
+
+Claude Code has one shared skill directory. Synchronize profile-specific skills
+when choosing the profile:
+
+```bash
+tools/install-skills.sh --claude private
+# When switching to Working:
+tools/install-skills.sh --claude working
+```
+
+The last synchronization determines the contents of Claude's shared directory.
+Persistent Codex and OMP roots are unaffected. `--claude` accepts no extra skill
+names and synchronizes the entire profile. Foreign files and links are left
+alone; the installer reports conflicts.
+
+Private includes game development, Astro, `design-authenticity`, and
+`design-system-ui`. Working includes `react-nextjs` and `figma-source-of-truth`.
+All remaining skills support both profiles. OMP uses its native profile roots
+and its own credentials. OMP work stays in OMP and is not routed to Codex or Claude.
+
+### Inspect or remove an installation
+
+```bash
+# Inspect locally recorded installation targets:
+cat .installed-manifest
+
+# Remove one skill:
+tools/uninstall-skills.sh godot
+
+# Remove all links managed by this repository:
+tools/uninstall-skills.sh
+```
+
+The manifest stores a skill name and target root per line, separated by a tab.
+The installer and uninstaller manage their own links. Unknown names abort
+installation before links are created. After changing a skill's scope, reinstall
+it to prune stale persistent links.
+
+## Write a useful request
+
+Specify the goal, location, expected behavior, and constraints. For bugs, add
+reproduction steps. For audits, say whether you want findings only or fixes too.
+
+```text
+Use ultimate-testing-qa.
+Project: current repository; start it with the existing dev script.
+Bug: double-clicking “Place order” creates two orders.
+Reproduce the flow, fix the cause, and retest it.
+Use existing tests and report any checks left open.
+```
+
+The examples use ordinary prompts and exact skill names. Labels such as
+`/lean audit` or `/docs-check` in individual skills identify workflows.
+Registered slash-command support depends on the host; spelling out the task
+works without that registration.
+
+### Combine skills when the task needs it
+
+```text
+Use astro for implementation and accessibility for accessibility checks.
+Add a contact form with validation states to the existing project.
+Check the build, keyboard interaction, focus, and useful error messages.
+```
+
+```text
+Use backend-api-engineering for the authorization fix and semgrep-security
+for the follow-up security check. Preserve the API contract and test access
+to another user's data.
+```
+
+Every skill works independently. A skill supplies instructions, not missing
+programs, runtimes, or authenticated access. Existing authorization remains
+valid; external publishing and high-risk actions must be covered by the request.
+
+## Repository layout
+
+```text
+skills/<name>/SKILL.md     Agent entry point and binding workflow
+skills/<name>/README.md    Human-facing guide and technical details
+skills/<name>/references/  Detail loaded only when needed
+skills/<name>/scripts/     Executable tools, where provided
+skills/<name>/assets/      Templates and support files, where provided
+skills/<name>/tests/       Self-tests and validation
+profiles/                 Optional project requirements
+tools/                    Installation, routing, and installer tests
+docs/                     Architecture and authoring guidance
+```
+
+Skills do not all need scripts or the same subdirectories. Project-specific
+instructions load only when the task names the project.
 
 ## Skills
 
-Twenty-seven skills. The index below is navigation only; each skill then gets
-its own detailed section — scope, shipped automation, how to invoke it in
-Claude Code, Codex, and oh-my-pi (omp), copy-paste examples, and its own
-verify command. `skills/<name>/USAGE.md` is the same guide, mirrored into
-the symlinked skill directory for agents browsing the folder locally; the
-README is the canonical copy.
+The sections below introduce every skill with practical usage examples. Each
+skill’s README combines its usage guide, host examples, and technical details.
+Prompts can be used in any of the three clients when the skill and required
+tools are available. Self-tests check the skill and its supplied checks; changes
+to your target project still need that project's own verification.
 
-| Skill | Domain | Verify (exit 0 = PASS) |
+| Skill | Purpose | Profile |
 |---|---|---|
-| [lowpoly-reference-to-blender](#lowpoly-reference-to-blender) | Game dev | `blender -b --python …/tests/test_e2e_pipeline.py` |
-| [defold-development](#defold-development) | Game dev | `python3 …/tests/test_skill.py` |
-| [game-asset-pipeline-shaders](#game-asset-pipeline-shaders) | Game dev | `python3 …/tests/test_skill.py` |
-| [game-audio-sound-design](#game-audio-sound-design) | Game dev | `python3 …/tests/test_skill.py` |
-| [godot](#godot) | Game dev | `python3 …/tests/test_skill.py` |
-| [astro](#astro) | Web frameworks | `python3 …/tests/test_skill.py` |
-| [react-nextjs](#react-nextjs) | Web frameworks | `python3 …/tests/test_skill.py` |
-| [backend-api-engineering](#backend-api-engineering) | Engineering | `python3 …/tests/test_skill.py` |
-| [ultimate-security-hardening](#ultimate-security-hardening) | Engineering | `python3 …/tests/test_skill.py` |
-| [ultimate-testing-qa](#ultimate-testing-qa) | Engineering | `node …/tests/run.mjs` |
-| [ultimate-code-quality-refactoring](#ultimate-code-quality-refactoring) | Engineering | `python3 …/tests/test_skill.py` |
-| [ultimate-code-review](#ultimate-code-review) | Engineering | `python3 …/tests/test_skill.py` |
-| [ultimate-i18n-localization](#ultimate-i18n-localization) | Engineering | `node …/tests/run.mjs` |
-| [documentation-technical-writing](#documentation-technical-writing) | Engineering | `python3 …/tests/test_skill.py` |
-| [accessibility](#accessibility) | Engineering | `python3 …/tests/test_skill.py` |
-| [seo-performance](#seo-performance) | Engineering | `node …/tests/run.mjs` |
-| [ci-triage](#ci-triage) | Engineering | `python3 …/tests/test_skill.py` |
-| [review-followup](#review-followup) | Engineering | `python3 …/tests/test_skill.py` |
-| [semgrep-security](#semgrep-security) | Engineering | `python3 …/tests/test_skill.py` |
-| [playwright](#playwright) | Engineering | `python3 …/tests/test_skill.py` |
-| [agent-harness-engineering](#agent-harness-engineering) | Engineering | `python3 …/tests/test_skill.py` |
-| [lean-engineering](#lean-engineering) | Engineering | `python3 …/tests/test_skill.py` |
-| [design-authenticity](#design-authenticity) | Design | `python3 …/tests/test_skill.py` |
-| [design-system-ui](#design-system-ui) | Design | `node …/tests/run.mjs` |
-| [figma-source-of-truth](#figma-source-of-truth) | Design | `python3 …/tests/test_skill.py` |
-| [human-writing](#human-writing) | Writing/meta | `python3 …/tests/test_lint_text.py` |
-| [skill-orchestrator](#skill-orchestrator) | Writing/meta | `python3 …/tests/test_orchestrator.py` |
-
-Invoke convention used by all three hosts: name the skill with its exact
-directory name and describe the task. Claude Code reads
-`~/.claude/skills/`, Codex reads `~/.agents/skills/` and its profile roots,
-and oh-my-pi uses its native profile skill directory. Naming the skill requests
-explicit activation rather than relying on description matching. Explicit parameter
-lists (asset_type, polygon_budget, quality_profile, …) live in each
-`SKILL.md`; defaults are sane — the agent stops only for missing references
-or contradictory specs.
-
----
+| [lowpoly-reference-to-blender](#lowpoly-reference-to-blender) | Build 3D assets from reference images | private |
+| [defold-development](#defold-development) | Develop games with Defold | private |
+| [godot](#godot) | Develop games with Godot | private |
+| [game-asset-pipeline-shaders](#game-asset-pipeline-shaders) | Check materials, textures, and exports | private |
+| [game-audio-sound-design](#game-audio-sound-design) | Generate and validate game audio | private |
+| [astro](#astro) | Build websites with Astro | private |
+| [react-nextjs](#react-nextjs) | Maintain React and Next.js projects | working |
+| [backend-api-engineering](#backend-api-engineering) | Build and repair backends and APIs | both |
+| [ultimate-security-hardening](#ultimate-security-hardening) | Investigate and fix security issues | both |
+| [ultimate-testing-qa](#ultimate-testing-qa) | Test web applications and verify fixes | both |
+| [ultimate-code-quality-refactoring](#ultimate-code-quality-refactoring) | Audit code quality and refactor safely | both |
+| [ultimate-code-review](#ultimate-code-review) | Review changes with concrete evidence | both |
+| [ultimate-i18n-localization](#ultimate-i18n-localization) | Build and validate localization | both |
+| [documentation-technical-writing](#documentation-technical-writing) | Keep technical documentation useful and accurate | both |
+| [accessibility](#accessibility) | Build and audit accessible interfaces | both |
+| [seo-performance](#seo-performance) | Investigate discoverability and loading performance | both |
+| [ci-triage](#ci-triage) | Diagnose failing CI jobs | both |
+| [review-followup](#review-followup) | Address review comments against current code | both |
+| [semgrep-security](#semgrep-security) | Verify security-relevant changes with Semgrep | both |
+| [playwright](#playwright) | Inspect interfaces in a real browser | both |
+| [agent-harness-engineering](#agent-harness-engineering) | Inspect agent runtimes and tool contracts | both |
+| [lean-engineering](#lean-engineering) | Deliver complete solutions with less complexity | both |
+| [design-authenticity](#design-authenticity) | Develop a visual identity that fits the product | private |
+| [design-system-ui](#design-system-ui) | Keep tokens, themes, and components consistent | private |
+| [figma-source-of-truth](#figma-source-of-truth) | Preserve Figma requirements in implementation | working |
+| [human-writing](#human-writing) | Write clear, natural prose | both |
+| [skill-orchestrator](#skill-orchestrator) | Inspect the collection and route tasks | both |
 
 ### `lowpoly-reference-to-blender`
 
-Reference image → stylized low-poly Blender asset → validated GLB for
-real-time engines (Defold and friends). Workflow: analyze reference → plan →
-category build path (characters/faces, vehicles/karts, environments, props) →
-multi-view blueprint gate → mesh validation → 0–100 quality score → export.
-Needs live Blender MCP or background Blender Python (Blender 5.3 here; +Z up,
-+Y facing, 1 BU = 1 m).
+Turn concept art into a stylized low-poly Blender asset, from reference analysis and reconstructed views to mesh validation and GLB export.
 
-Install only this skill: `tools/install-skills.sh lowpoly-reference-to-blender`
+Profile: Private. Preparation: Provide the reference image, asset type, polygon budget, and target engine. Extra views help resolve hidden shapes.
 
-- **Claude Code** (`~/.claude/skills/`): attaches to any 3D-from-reference
-  ask; give it the concept art path or paste.
-- **Codex** (`~/.agents/skills/`): same content, reference by name in the
-  prompt; Codex surfaces it through its skills list.
-- **oh-my-pi**: keeps Blender MCP live in-session — hand it the reference and
-  the profile.
+Expected result: A model, comparison views, mesh checks, and an export report. Quality scores require visual comparison with the reference.
 
-Shipped: `scripts/detect_blender.py` (system Python) + `inspect_scene.py`,
-`render_reference_views.py`, `validate_mesh.py`, `export_glb.py`,
-`verify_export.py` (run inside Blender: MCP or `blender -b --python`).
-Reference art is the design authority — simplify allowed, substitute
-forbidden; without visual comparison the skill emits `VISUAL_REVIEW_REQUIRED`
-instead of a number. Outputs non-destructive, dated suffix on collision.
+Requirements and limits: Requires Blender Python through the private Blender MCP or a background process. System Python cannot import bpy here. Use +Z up, +Y forward, +X right; 1 BU = 1 m. Without visual comparison, report VISUAL_REVIEW_REQUIRED. Use dated names when outputs collide.
 
-```text
-Use lowpoly-reference-to-blender to build a high-quality game-ready low-poly
-character from this concept art. asset_type=character, polygon_budget=2500,
-quality_profile=hero.
+#### lowpoly-reference-to-blender: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh lowpoly-reference-to-blender
 ```
 
-```text
-Use lowpoly-reference-to-blender on ./ref/hero-front.png — hero profile, keep
-silhouette, GLB out, report the quality score with observations.
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
+
+```bash
+tools/install-skills.sh --claude private
 ```
 
-Verify: `blender -b --python skills/lowpoly-reference-to-blender/tests/test_e2e_pipeline.py`
+Try these prompts in your target project:
 
----
+**Claude Code:**
+
+```text
+Use the lowpoly-reference-to-blender skill. Build a low-poly Godot character from ./ref/hero-front.png with a 2500-polygon budget. Preserve the silhouette and colors, label reconstructed views, and export a validated GLB.
+```
+
+**Codex:**
+
+```text
+Use the lowpoly-reference-to-blender skill. Compare ./assets/kart.blend with ./ref/kart.png. Check proportions and materials, describe mismatches, and propose the next modeling corrections.
+```
+
+**oh-my-pi:**
+
+```text
+Use the lowpoly-reference-to-blender skill. Check the existing prop export for Defold. Verify scale, axes, and mesh integrity, and keep new outputs separate.
+```
+
+#### lowpoly-reference-to-blender: Self-test
+
+Run from the repository root:
+
+```bash
+blender -b --python skills/lowpoly-reference-to-blender/tests/test_e2e_pipeline.py
+```
 
 ### `defold-development`
 
-Universal Defold 1.14.1 game development, genre- and art-style-agnostic:
-rendering (2D/pixel/voxel/2.5D/3D), Lua scripts and lifecycle, game
-objects/collections/factories/proxies, physics, shaders/materials/PBR,
-glTF/GLB with Draco/Meshopt/KTX2, local multiplayer, replay, GUI/fonts,
-audio, profiling, `bob.jar` builds, DAP debugging. Engine claims are
-version-gated; unverified items are marked, never invented.
+Work on Defold gameplay, Lua lifecycle, GUI, rendering, imports, and builds using the existing project architecture and art style.
 
-Install only this skill: `tools/install-skills.sh defold-development`
+Profile: Private. Preparation: Provide game.project, the target platform, expected behavior, and reproduction steps for bugs.
 
-- **Claude Code** (`~/.claude/skills/`): fires on any Defold task in a
-  Defold project or a Defold question.
-- **Codex** (`~/.agents/skills/`): name `defold-development` in the prompt.
-- **oh-my-pi**: routes from the skill list; state the version when it matters.
+Expected result: A gameplay change or evidence-backed finding with relevant build and runtime checks.
 
-Shipped: `scripts/audit_defold_project.py`, `bob_build.sh`, `check_build.sh`,
-`check_version.py`, `gltf_preflight.py`, `validate_skill.py`. Routing loads
-one reference set per task (21 references, never all).
+Requirements and limits: Check engine APIs against the project version. Load project profiles only when named. Prefer official automation; community MCP integration requires explicit opt-in.
 
-```text
-Use the defold-development skill to add split-screen local co-op to this
-top-down shooter (Defold 1.14.1, Lua), with camera proxies and a focus plan.
+#### defold-development: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh defold-development
 ```
 
-```text
-Use the defold-development skill: run a preflight on my glTF pipeline and tell
-me which Draco/Meshopt flags are safe for the HTML5 target.
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
+
+```bash
+tools/install-skills.sh --claude private
 ```
 
+Try these prompts in your target project:
+
+**Claude Code:**
+
 ```text
-Use the defold-development skill: implement save games with versioned schema
-migration for this roguelike, non-destructive on old saves.
+Use the defold-development skill. Add versioned save games to this Defold project. Keep old save files readable and test saving, loading, and a schema upgrade.
 ```
 
-Verify: `python3 skills/defold-development/tests/test_skill.py`
+**Codex:**
 
----
+```text
+Use the defold-development skill. Music plays twice after a scene change. Reproduce the bug, inspect Lua lifecycle handling, and fix the cause.
+```
+
+**oh-my-pi:**
+
+```text
+Use the defold-development skill. Check GLB imports for our HTML5 build. Identify compression supported by the project version and list missing verification.
+```
+
+#### defold-development: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/defold-development/tests/test_skill.py
+```
 
 ### `godot`
 
-Universal Godot 4.7.2 game development, genre- and art-style-agnostic:
-renderer choice (Forward+/Mobile/Compatibility), scenes/nodes/resources,
-GDScript static typing and C#, gameplay systems (movement, FSM/AI, save
-games, input abstraction, cameras), Jolt/classic physics, navigation,
-AnimationPlayer/AnimationTree, CanvasItem/Spatial shaders, TileMapLayer,
-Control accessibility, audio buses, multiplayer RPC, headless CI/testing,
-export to Linux/Windows/macOS/Web/mobile, glTF/Blender intake. Version-gated
-claims; unverified items marked, never invented. The engine skills stay
-neutral about each other; assets move through the GLB pipeline.
+Build and maintain Godot scenes, controls, physics, UI, audio, shaders, and exports in GDScript or C#. Choose rendering and gameplay systems to suit the project.
 
-Install only this skill: `tools/install-skills.sh godot`
+Profile: Private. Preparation: Provide project.godot, the affected scene, engine version, target platform, and expected behavior.
 
-- **Claude Code** (`~/.claude/skills/`): activates on Godot work inside a
-  `.godot`/`.tscn`/`.gd` project or a Godot question.
-- **Codex** (`~/.agents/skills/`): reference `godot` explicitly.
-- **oh-my-pi**: routes from the skill list; the local `godot` binary backs
-  headless checks.
+Expected result: A verified scene or script change with results from the available engine checks.
 
-Shipped: `scripts/audit_godot_project.py`, `check_version.py`,
-`headless_check.sh`, `validate_skill.py`. References (27) load per task.
+Requirements and limits: Headless checks do not replace visual review. Renderer, physics, and API choices must match the installed Godot version.
 
-```text
-Use the godot skill to add coyote-time jumping to the player controller
-(Godot 4.7, GDScript, static typing).
+#### godot: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh godot
 ```
 
-```text
-Use the godot skill: implement a Jolt character body with input-buffered
-double jump plus a headless test.
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
+
+```bash
+tools/install-skills.sh --claude private
 ```
 
+Try these prompts in your target project:
+
+**Claude Code:**
+
 ```text
-Use the godot skill to review my AnimationTree: signals fire twice on scene
-reload — find the root cause and fix it with a regression test.
+Use the godot skill. Add coyote time and input buffering to the existing player controller. Reuse the input abstraction and test ledge departure and landing.
 ```
 
-Verify: `python3 skills/godot/tests/test_skill.py` ·
-`bash skills/godot/scripts/headless_check.sh skills/godot/examples/base-project`
+**Codex:**
 
----
+```text
+Use the godot skill. A signal is handled twice after reloading the scene. Find the duplicate connection and verify several restart cycles.
+```
+
+**oh-my-pi:**
+
+```text
+Use the godot skill. Check this project for web export. Inspect the renderer, resources, and export configuration, and identify untested browser paths.
+```
+
+#### godot: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/godot/tests/test_skill.py
+```
 
 ### `game-asset-pipeline-shaders`
 
-Technical asset pipeline between asset creation and engine runtime, engine-
-agnostic with Defold 1.14.1 + Godot 4.7.2 adapters (adapter contract extends
-to Unity/Unreal/Bevy/custom renderers, WebGL/WebGPU): material/texture/shader
-audits, glTF 2.0/GLB validation (mesh-codec vs KTX2 lanes kept separate),
-safe dry-run-first repairs with `.orig` backups, art-style-aware rules
-(pixel-art keeps lossless + nearest), disk-vs-VRAM budget reports, CI-ready
-headless gates. Owns materials/textures/shaders/export; modeling stays in
-`lowpoly-reference-to-blender`, engine APIs in `defold-development`/`godot`.
-Estimates labeled `estimated`, unrun tests reported `NOT_RUN`.
+Audit the technical path from authored assets to runtime: materials, textures, shaders, glTF/GLB, and memory budgets. Defold and Godot adapters are included.
 
-Install only this skill: `tools/install-skills.sh game-asset-pipeline-shaders`
+Profile: Private. Preparation: Provide the asset directory, engine, art style, target device, budget, and any protected source files.
 
-- **Claude Code** (`~/.claude/skills/`): activates on asset-pipeline tasks —
-  textures, materials, shaders, glTF, export, VRAM budgets.
-- **Codex** (`~/.agents/skills/`): reference `game-asset-pipeline-shaders`
-  explicitly; modes (`audit|fix|optimize|shader|material|textures|export|
-  validate|benchmark|compare`) travel in the request, not as slash-commands.
-- **oh-my-pi**: routes from the skill list; Blender/Godot binaries back the
-  HEADLESS lanes when present.
+Expected result: File and reference findings, separate disk-size and estimated VRAM figures, and a repair or optimization plan.
 
-Shipped: `scripts/` — `asset_audit.py`, `gltf_validate.py`,
-`texture_analyze.py`, `material_audit.py`, `pipeline_runner.py` (mode
-dispatcher incl. validate/compare), `asset_report.py`, `tool_probe.py`,
-`blender_preflight.py` (runs inside Blender 5.3). References (12) load per
-mode; `assets/templates/asset-pipeline.yaml` is the project config.
+Requirements and limits: Start repairs with a dry run and back up originals. Preserve appropriate lossless sources and filtering for pixel art. Blender preflight runs inside Blender. Deep glTF specification checks require a suitable validator; other engines are extension points.
 
-```text
-Use the game-asset-pipeline-shaders skill to audit this project's asset
-pipeline — findings by severity, no writes, report what stayed NOT_RUN.
+#### game-asset-pipeline-shaders: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh game-asset-pipeline-shaders
 ```
 
-```text
-Use the game-asset-pipeline-shaders skill: optimize mode on assets/textures,
-profile mobile; disk vs VRAM separately, pixel-art keeps lossless sources.
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
+
+```bash
+tools/install-skills.sh --claude private
 ```
 
-Verify: `python3 skills/game-asset-pipeline-shaders/tests/test_skill.py` ·
-`blender -b --python-expr "import sys; sys.path.insert(0,'skills/game-asset-pipeline-shaders/scripts'); import blender_preflight; blender_preflight.main()"`
+Try these prompts in your target project:
 
----
+**Claude Code:**
+
+```text
+Use the game-asset-pipeline-shaders skill. Audit assets/ in our Godot game for broken references, incorrect color spaces, and oversized textures. Report disk size and estimated VRAM separately. Do not edit files yet.
+```
+
+**Codex:**
+
+```text
+Use the game-asset-pipeline-shaders skill. Plan texture optimization for mobile devices. Preserve pixel-art sources and explain the expected benefit for each file.
+```
+
+**oh-my-pi:**
+
+```text
+Use the game-asset-pipeline-shaders skill. Validate ./assets/vehicle.glb for material and reference errors. Separate static checks from results obtained in an actual engine run.
+```
+
+#### game-asset-pipeline-shaders: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/game-asset-pipeline-shaders/tests/test_skill.py
+```
+
+The modes `audit`, `validate`, `fix`, `optimize`, `material`, `textures`, `shader`, `export`, `benchmark`, and `compare` describe workflows. Local installation targets are recorded in `.installed-manifest`.
 
 ### `game-audio-sound-design`
 
-Game audio production + QA on top of the game-audio-forge backend (mandatory
-prerequisite, separate repo, `~/dev/github/game-audio-forge`): SFX/music
-generation driving `gaf`, adaptive-music and spatial-audio architectures,
-mixing guidance with measured loudness gates, asset+engine audits
-(`analyze|fix|optimize`, safe repairs → new files), performance budgets,
-per-asset license statuses, engine adapters (Defold 1.14.1, Godot 4.7.2 —
-verified APIs only). Doctor reports READY|PARTIALLY_READY|NOT_READY;
-measurement states PASS|WARNING|FAIL|NOT_TESTED, creative quality always
-`AUDIO_REVIEW_REQUIRED`. Offline LUFS honestly reported NOT_TESTED. Owns
-audio assets/QA/integration; backend internals stay in game-audio-forge,
-cross-cutting a11y in `accessibility`.
+Manage sound effects, music, mixing, and audio QA. Generate audio through game-audio-forge; use ffmpeg and ffprobe for analysis and repairs.
 
-Install only this skill: `tools/install-skills.sh game-audio-sound-design`
+Profile: Private. Preparation: Provide the game project, audio category, mood, duration, and output format. Use a separate output directory for repairs.
 
-- **Claude Code** (`~/.claude/skills/`): activates on audio/music/SFX/mix/
-  audio-audit tasks; requires the forge backend for generation.
-- **Codex** (`~/.agents/skills/`): reference `game-audio-sound-design`;
-  modes (doctor/audit/fix/optimize/validate/manifest) travel in the request.
-- **oh-my-pi**: routes from the skill list; ffmpeg + game-audio-forge back
-  the live lanes.
+Expected result: A readiness report, measured findings, repaired files, or generated assets with provenance and license status.
 
-Shipped: `scripts/` — `audio_doctor.py`, `audio_audit.py`, `audio_process.py`,
-`audio_batch.py`, `audio_validate.py`, `audio_manifest.py`, `gaf_adapter.py`,
-`engine_defold.py`, `engine_godot.py` (+ `audio_common.py`); `references/`
-(15) load per step; `templates/` config/manifest/budget JSON.
+Requirements and limits: Generation requires a separately configured game-audio-forge backend. The doctor installs nothing. Defold and Godot adapters are included; Unity and Unreal adapters are not implemented. Creative quality remains AUDIO_REVIEW_REQUIRED; unmeasured checks remain NOT_TESTED. Recheck licensing before release.
 
-```text
-Use the game-audio-sound-design skill: audit this project's audio, fix mode
-into a new directory, originals untouched, findings with severities and the
-doctor verdict included.
+#### game-audio-sound-design: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh game-audio-sound-design
 ```
 
-```text
-Use the game-audio-sound-design skill: generate a boss-fight music loop via
-game-audio-forge, verify measured BPM and loop seam, manifest it with license
-status.
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
+
+```bash
+tools/install-skills.sh --claude private
 ```
 
-Verify: `python3 skills/game-audio-sound-design/tests/test_skill.py`
+Try these prompts in your target project:
 
----
+**Claude Code:**
+
+```text
+Use the game-audio-sound-design skill. Check the audio environment, then audit assets/audio for silence, clipping, and loop seams. List missing tools and write repairs only to audio-fixes/.
+```
+
+**Codex:**
+
+```text
+Use the game-audio-sound-design skill. Generate a 45-second boss-fight loop through game-audio-forge with a mechanical, tense mood. Check measured tempo, loop seam, and provenance; leave listening review explicitly pending.
+```
+
+**oh-my-pi:**
+
+```text
+Use the game-audio-sound-design skill. Plan adaptive exploration, combat, and pause music for this Godot project. Verify scene changes and restart behavior against the installed engine version.
+```
+
+#### game-audio-sound-design: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/game-audio-sound-design/tests/test_skill.py
+```
+
+Prerequisites: configure game-audio-forge before generating audio. Installing this skill alone does not make generation available.
 
 ### `astro`
 
-Project-type-agnostic Astro development (baseline Astro 7.4.x, version-gated
-against npm at task time): SSG/on-demand/mixed rendering, route caching,
-islands and hydration directives, Actions, sessions, middleware, Content
-Layer, MDX, headless CMS intake, `astro:assets`, Fonts API, SEO, Core Web
-Vitals, WCAG 2.2 AA, CSP/adapters (node/netlify/vercel/cloudflare/static/
-docker)/upgrades. Detects project type and loads only matching references
-(17); Astro is never forced onto stacks that fit it better.
+Develop new and existing Astro sites, including content, routing, islands, server features, and deployment. Start by inspecting the project and installed version.
 
-Install only this skill: `tools/install-skills.sh astro`
+Profile: Private. Preparation: Provide the project, affected route, and task. Include measurements and target devices for performance work.
 
-- **Claude Code** (`~/.claude/skills/`): attaches inside any Astro project.
-- **Codex** (`~/.agents/skills/`): name `astro` in the prompt.
-- **oh-my-pi**: private work is Astro-first by profile; routes automatically.
+Expected result: An implementation that fits the existing Astro project, build results, and clearly identified runtime checks still pending.
 
-Shipped: `scripts/audit_astro_project.mjs` — project shape, versions, warnings
-as evidence.
+Requirements and limits: Reference versions are starting points. Verify APIs against the project. Add integrations, UI frameworks, and hosting dependencies only when the task calls for them.
 
-```text
-Use the astro skill: this marketing site ships 400 KB of JS on the landing
-page — find the islands that should be static and cut hydration, keep Actions
-working.
+#### astro: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh astro
 ```
 
-```text
-Use the astro skill: migrate Content Collections config to the Content Layer
-without breaking routes; show the diff and the verification command.
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
+
+```bash
+tools/install-skills.sh --claude private
 ```
 
+Try these prompts in your target project:
+
+**Claude Code:**
+
 ```text
-Use the astro skill: add session auth + middleware redirect for the dashboard,
-SSR only where needed, static elsewhere.
+Use the astro skill. The home page ships too much JavaScript. Inspect islands and remove unnecessary hydration while preserving interactive behavior. Compare delivered JavaScript before and after.
 ```
 
-Verify: `python3 skills/astro/tests/test_skill.py`
+**Codex:**
 
----
+```text
+Use the astro skill. Add an article page backed by the existing content collection. Reuse layouts and verify invalid slugs and the build.
+```
+
+**oh-my-pi:**
+
+```text
+Use the astro skill. Migrate content configuration for the installed Astro version. Preserve existing URLs and content.
+```
+
+#### astro: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/astro/tests/test_skill.py
+```
 
 ### `react-nextjs`
 
-Project-type-agnostic React/Next.js development (baselines React 19.3.1,
-Next.js 16.4.6, version-gated against the project lockfile): SPA/Vite, App/
-Pages Router, Server vs Client Components, Suspense/streaming, Cache
-Components and `use cache`, `proxy.ts` vs middleware, Server Functions,
-Compiler memoization, hooks/TypeScript/state tooling, design systems, WCAG
-2.2 AA, CWV, SEO/metadata, testing (Vitest/RTL/Playwright/axe), route/action/
-cache security, deployment adapters, upgrades. Next.js is never forced.
+Work on React SPAs and Next.js App or Pages Router projects, including components, data flow, caching, forms, and server boundaries.
 
-Install only this skill: `tools/install-skills.sh react-nextjs`
+Profile: Working. Preparation: Provide the project, router, affected component, and observed behavior. Read installed versions from manifests and lockfiles.
 
-- **Claude Code** (`~/.claude/skills/`): activates in any React/Next project.
-- **Codex** (`~/.agents/skills/`): reference `react-nextjs` by name.
-- **oh-my-pi**: routes from the skill list; Astro stays preferred for private
-  frontend unless the repo already uses React/Next.
+Expected result: A change within the existing stack, checked with relevant component, integration, or build commands.
 
-Mode gate → stack gate → version gate before any code; references (22) load
-per task; ship gate uses real test/build output. Shipped:
-`scripts/audit_react_project.mjs`, `check-versions.sh`.
+Requirements and limits: This skill belongs to the Working profile. Private frontend work remains Astro-first under repository policy. Adapt examples to the actual React and Next.js versions.
 
-```text
-Use the react-nextjs skill: this dashboard re-renders the whole table on
-filter change. Profile, then fix with memoization boundaries — behavior must
-not change, show before/after flame evidence.
+#### react-nextjs: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh react-nextjs
 ```
 
-```text
-Use the react-nextjs skill: audit App Router cache use against Cache
-Components, list violations file:line, fix the P0s.
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
+
+```bash
+tools/install-skills.sh --claude working
 ```
 
+Try these prompts in your target project:
+
+**Claude Code:**
+
 ```text
-Use the react-nextjs skill: add i18n (next-intl) with hreflang and locale
-routing; keep CWV green, report LCP before/after.
+Use the react-nextjs skill. The whole table rerenders when a filter changes. Measure the cause and improve the affected data flow without changing behavior.
 ```
 
-Verify: `python3 skills/react-nextjs/tests/test_skill.py`
+**Codex:**
 
----
+```text
+Use the react-nextjs skill. Audit cache usage in this Next.js App Router project. Identify concrete locations and fix confirmed defects with appropriate tests.
+```
+
+**oh-my-pi:**
+
+```text
+Use the react-nextjs skill. Fix the form that hides server errors. Preserve existing validation and test success, invalid input, and server failure.
+```
+
+#### react-nextjs: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/react-nextjs/tests/test_skill.py
+```
 
 ### `backend-api-engineering`
 
-Framework-agnostic backend/API engineering: CREATE, AUDIT, FIX, OPTIMIZE
-across Node (Fastify/NestJS/Express/Hono), Python (FastAPI/Django/DRF/Flask),
-Go, Rust (Axum/Actix), Java/Kotlin, C#, PHP; PostgreSQL/MySQL/SQLite,
-Mongo/Redis/search/vector; REST/GraphQL/gRPC/WebSocket/SSE. RFC 9457 errors,
-OpenAPI validation, OWASP API Top 10, expand-contract migrations. Detects and
-fixes (authz gaps, N+1, missing indexes, unvalidated input, tenancy gaps)
-instead of only reporting. Unverified = NOT TESTED, never "working". Deep
-security → ultimate-security-hardening; test strategy → ultimate-testing-qa;
-refactors → ultimate-code-quality-refactoring.
+Implement APIs, authentication, authorization, databases, migrations, and background jobs using the existing stack and contracts.
 
-Install only this skill: `tools/install-skills.sh backend-api-engineering`
+Profile: Private and Working. Preparation: Provide the service path, route or job, expected behavior, and relevant database structure.
 
-- **Claude Code** (`~/.claude/skills/`): fires on backend/API work in any
-  stack, any project age.
-- **Codex** (`~/.agents/skills/`): name `backend-api-engineering`.
-- **oh-my-pi**: routes from the skill list; reuses the project's real stack.
+Expected result: A feature or fix backed by API, database, or migration tests and observable results.
 
-Shipped: `scripts/detect-project.sh`, `migration-review.sh`,
-`validate-openapi.py`.
+Requirements and limits: Production database operations, deployments, and breaking contracts require authorization covering those actions. Local checks do not prove a migration works on production data.
 
-```text
-Use the backend-api-engineering skill: audit the Fastify service in
-services/api — authz per route, N+1 in listings, migration safety. Fix with
-tests, show measurements.
+#### backend-api-engineering: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh backend-api-engineering
 ```
 
-```text
-Use the backend-api-engineering skill: design schema + expand-contract
-migration for multi-tenancy on this Django app; validate the OpenAPI output.
-```
+Try these prompts in your target project:
+
+**Claude Code:**
 
 ```text
-Use the backend-api-engineering skill: optimize the top-3 slow Axum endpoints
-— baseline, change, re-measure, report deltas.
+Use the backend-api-engineering skill. Audit services/api for missing object authorization and N+1 queries. Fix confirmed issues and add tests for access across tenant boundaries.
 ```
 
-Verify: `python3 skills/backend-api-engineering/tests/test_skill.py`
+**Codex:**
 
----
+```text
+Use the backend-api-engineering skill. Add pagination to the existing order list. Follow the API contract and test empty results, boundaries, and invalid parameters.
+```
+
+**oh-my-pi:**
+
+```text
+Use the backend-api-engineering skill. Plan an expand-and-contract migration for a new tenant ID. Check backward compatibility and show deployment steps without changing production data.
+```
+
+#### backend-api-engineering: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/backend-api-engineering/tests/test_skill.py
+```
 
 ### `ultimate-security-hardening`
 
-Security audit, hardening, remediation for any project (web, API, CLI, game
-backends, containers, IaC; any language). Baselines: OWASP Top 10 2025, ASVS
-5.0.0, API Security Top 10 2023, WSTG 4.2, CWE Top 25, SSDF, KEV/EPSS/CVSS,
-CycloneDX. Spine: DISCOVER → THREAT MODEL → AUDIT → VALIDATE → PRIORITIZE →
-FIX → REGRESSION TEST → RE-SCAN → REPORT. Orchestrates semgrep, gitleaks,
-osv-scanner, trivy, ZAP with zero-dep fallbacks — a missing tool is a coverage
-gap, never a pass. Never claims "secure"; secrets never leave the repo; errors
-surface as INCOMPLETE.
+Inspect attack surfaces, confirm suspected vulnerabilities in code, and verify fixes with regression tests and another scan. Cover application code, dependencies, and infrastructure as needed.
 
-Install only this skill: `tools/install-skills.sh ultimate-security-hardening`
+Profile: Private and Working. Preparation: Specify the project and relevant features. State whether you want findings only or local fixes as well.
 
-- **Claude Code** (`~/.claude/skills/`): activates on any security task;
-  Semgrep is the deterministic lane by profile, repo config wins.
-- **Codex** (`~/.agents/skills/`): name `ultimate-security-hardening`.
-- **oh-my-pi**: routes from the skill list; local tools + fallback scanners.
+Expected result: Prioritized findings with code evidence, tool coverage, fix status, and verification results.
 
-Shipped: `scripts/check-tools.sh`, `detect-project.sh`,
-`run-security-audit.sh`, `validate-report.py`. Only confirmed findings get
-fixes.
+Requirements and limits: Missing scanners and untested areas remain coverage gaps. A report does not guarantee complete security. Keep secrets out of output; high-risk actions require appropriate authorization.
 
-```text
-Use the ultimate-security-hardening skill: audit services/api for authz,
-injection, secrets exposure; fix confirmed findings with minimal diffs and
-re-scan to prove them closed.
+#### ultimate-security-hardening: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh ultimate-security-hardening
 ```
 
-```text
-Use the ultimate-security-hardening skill: threat-model the checkout flow,
-then the dependency/supply-chain lane, report with CVSS + evidence file:line.
-```
+Try these prompts in your target project:
+
+**Claude Code:**
 
 ```text
-Use the ultimate-security-hardening skill: audit infra/ for misconfig and
-drift before release; patch only what you can prove.
+Use the ultimate-security-hardening skill. Audit the API service for authentication and authorization defects. Confirm findings with code evidence and report without editing files.
 ```
 
-Verify: `python3 skills/ultimate-security-hardening/tests/test_skill.py`
+**Codex:**
 
----
+```text
+Use the ultimate-security-hardening skill. Fix the confirmed IDOR in order access. Add a regression test for another user and rerun the relevant security check.
+```
+
+**oh-my-pi:**
+
+```text
+Use the ultimate-security-hardening skill. Check dependencies, containers, and configuration before release. List available scanners, missing coverage, and remaining blockers.
+```
+
+#### ultimate-security-hardening: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/ultimate-security-hardening/tests/test_skill.py
+```
 
 ### `ultimate-testing-qa`
 
-Testing/QA engineering for any web surface (Astro, React, Next.js, Vue/Nuxt,
-Svelte/SvelteKit, Vite, vanilla, static; baselines Playwright, Vitest,
-axe-core re-probed against the lockfile): test architecture, E2E and
-cross-browser flows, unit/integration/component suites, live-site runtime/
-console/network audits, visual/responsive regression, form testing, API checks,
-bug reproduction → root-cause fix → retest, CI/CD gates. Existing setups
-extended, never replaced without cause; untested paths report NOT TESTED.
+Inspect existing tests, fill meaningful coverage gaps, and reproduce bugs in real browser flows. Follow issues through reproduction, repair, and retesting.
 
-Install only this skill: `tools/install-skills.sh ultimate-testing-qa`
+Profile: Private and Working. Preparation: Provide the URL or project path, start command, and critical user flow. Describe expected and actual results for bugs.
 
-- **Claude Code** (`~/.claude/skills/`): activates on any testing/QA task;
-  Playwright uses Firefox per profile unless the repo demands otherwise.
-- **Codex** (`~/.agents/skills/`): name `ultimate-testing-qa`.
-- **oh-my-pi**: routes from the skill list; Firefox-default browser.
+Expected result: A reproducible finding, an in-scope fix where applicable, relevant tests, and a record of checked and untested paths.
 
-Shipped: `scripts/qa.mjs analyze <project>` — framework, package manager,
-runners, routes, CI, evidence-only.
+Requirements and limits: Existing runners and configuration take precedence. Playwright defaults to Firefox unless the project requires another browser. Automated checks do not establish overall product quality.
 
-```text
-Use the ultimate-testing-qa skill: equip this SvelteKit app with a test
-architecture — Vitest units, Playwright E2E for checkout, CI gates — extend
-the existing setup, never replace it.
+#### ultimate-testing-qa: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh ultimate-testing-qa
 ```
 
-```text
-Use the ultimate-testing-qa skill: reproduce "form submits twice" on staging,
-fix the root cause in source, retest, report what stayed untested.
-```
+Try these prompts in your target project:
+
+**Claude Code:**
 
 ```text
-Use the ultimate-testing-qa skill: audit the live site — console errors,
-network failures, visual regression on three breakpoints — then the QA report.
+Use the ultimate-testing-qa skill. Double-clicking the form creates two orders. Reproduce the flow, fix the cause, and verify protection against duplicate submission.
 ```
 
-Verify: `node skills/ultimate-testing-qa/tests/run.mjs`
+**Codex:**
 
----
+```text
+Use the ultimate-testing-qa skill. Review existing login and checkout tests. Add the most important missing error paths within the current test setup.
+```
+
+**oh-my-pi:**
+
+```text
+Use the ultimate-testing-qa skill. Inspect the running site for console errors and failed requests. Test navigation and forms at narrow and wide viewports.
+```
+
+#### ultimate-testing-qa: Self-test
+
+Run from the repository root:
+
+```bash
+node skills/ultimate-testing-qa/tests/run.mjs
+```
 
 ### `ultimate-code-quality-refactoring`
 
-Code quality audit and controlled refactoring for any codebase (JS/TS,
-React/Next, Astro, Vue/Svelte, Python, Go, Rust, Java/Kotlin, C#, PHP,
-Lua/Defold, GDScript/Godot, Blender Python, C/C++; unknown → cautious generic
-mode). Audits tech debt, smells, duplication, complexity hotspots, dead code,
-architecture boundaries, perf suspects; refactors behavior-preservingly with
-baseline→change→verify per step through the project's own lint/typecheck/test
-tools. Risk-tiered autonomy (LOW auto-fix, HIGH approval), rollback protecting
-uncommitted work, evidence-only PASS/FAIL/UNVERIFIED reports. Read-only AUDIT
-is the default. Triggers include `/quality-audit`, `/quality-verify`.
+Find complex code, duplication, dead code, and problematic module boundaries. Preserve behavior during refactoring and verify each step against a baseline.
 
-Install only this skill: `tools/install-skills.sh ultimate-code-quality-refactoring`
+Profile: Private and Working. Preparation: Specify directories or files, audit versus implementation, and public interfaces that must remain stable.
 
-- **Claude Code** (`~/.claude/skills/`): fires on "quality audit", "find
-  technical debt", "/quality-audit".
-- **Codex** (`~/.agents/skills/`): name `ultimate-code-quality-refactoring`.
-- **oh-my-pi**: routes from the skill list; the project's own tools are the
-  verification lane.
+Expected result: Evidence-backed findings or a verified refactoring with focused steps, preserved behavior, and documented limits.
 
-BUG FIX and FEATURE CHANGE refactors are separate lanes. Shipped:
-`scripts/detect_project.py`, `run_audit.py`, `collect_metrics.py`,
-`detect_duplicates.py`, `compare_baseline.py`, `verify_changes.py`,
-`generate_report.py`.
+Requirements and limits: Audits are read-only by default. Major architecture changes need a decision. Keep bug fixes and new features distinct from behavior-preserving refactoring.
 
-```text
-Use the ultimate-code-quality-refactoring skill: audit packages/core for
-complexity hotspots and dead code; PASS/FAIL/UNVERIFIED only, no invented
-scores.
+#### ultimate-code-quality-refactoring: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh ultimate-code-quality-refactoring
 ```
 
-```text
-Use the ultimate-code-quality-refactoring skill: refactor the pricing module
-without changing behavior — baseline, per-step verify, evidence report, keep
-my uncommitted changes intact.
-```
+Try these prompts in your target project:
+
+**Claude Code:**
 
 ```text
-Use the ultimate-code-quality-refactoring skill: /quality-verify — check the
-staged diff against baseline before merge; FAIL the lane on behavior drift.
+Use the ultimate-code-quality-refactoring skill. Audit src/ for technical debt. Identify concrete files and prioritize maintenance risks. Do not edit code yet.
 ```
 
-Verify: `python3 skills/ultimate-code-quality-refactoring/tests/test_skill.py`
+**Codex:**
 
----
+```text
+Use the ultimate-code-quality-refactoring skill. Simplify packages/core/pricing.ts without changing behavior. Preserve the public API and run existing tests after each meaningful step.
+```
+
+**oh-my-pi:**
+
+```text
+Use the ultimate-code-quality-refactoring skill. Investigate the duplicated parsers. Check their differences first and consolidate only if existing contracts can be preserved.
+```
+
+#### ultimate-code-quality-refactoring: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/ultimate-code-quality-refactoring/tests/test_skill.py
+```
 
 ### `ultimate-code-review`
 
-Multi-axis code review & PR audit for any stack (web TS/React/Next/Astro,
-backend Python/Go/Rust, GDScript/Godot, Lua/Defold, Blender Python, CLI,
-monorepos, Docker/CI — detected from files, never assumed). Six independent
-axes — Standards, Spec, Bugs, Security, Testing, Performance — each reported
-separately, never merged into one score. Diff scopes: branch (three-dot
-merge-base), commit, range, staged, uncommitted (+untracked listed apart),
-single file, full-repo batches, PR read-only via gh/glab. Findings carry
-file:line + quoted evidence, severity×confidence, schema-validated, deduped
-with axis links. Read-only default; `--fix` (`--safe-only` low-risk-only) is
-the sole write mode; no commit/push. Spec absent → SPEC_NOT_AVAILABLE;
-skipped checks are gaps, never passes; gates (critical/high/security/all)
-exit 0/1/2 for CI. Axis sub-agents depth-1, no recursion, sequential
-fallback labeled honestly. Concept lineage: Matt Pocock's code-review skill
-(MIT), extended.
+Review standards, requirements, bugs, security, testing, and performance. Findings include severity, confidence, and verifiable locations.
 
-Install only this skill: `tools/install-skills.sh ultimate-code-review`
+Profile: Private and Working. Preparation: Specify a branch, commit range, PR, or local changes. Include requirements and define the review scope.
 
-- **Claude Code** (`~/.claude/skills/`): fires on "review this PR",
-  "/code-review --base main", "audit this diff".
-- **Codex** (`~/.agents/skills/`): name `ultimate-code-review`.
-- **oh-my-pi**: routes from the skill list; axis agents run isolated,
-  sequential fallback when unavailable.
+Expected result: Prioritized findings, code evidence, and a coverage record showing reviewed and skipped areas.
 
-Shipped: `scripts/prepare_review.py`, `git_review.py`, `collect_context.py`,
-`validate_findings.py`, `generate_report.py`; axis briefs `agents/*` +
-`schemas/`. Standards/Spec independence + gate honesty are the contract.
+Requirements and limits: Reviews are read-only by default. Fixes require an explicit request. Missing requirements and checks that were not run remain coverage gaps.
 
-```text
-/code-review --base main --gate high — merge-blocking only on confirmed,
-skipped checks listed as gaps.
+#### ultimate-code-review: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh ultimate-code-review
 ```
 
-```text
-Use the ultimate-code-review skill: review my uncommitted changes against
-docs/sprint-14.md, all six axes separate, md+json into reports/code-review/,
-no fixes.
-```
+Try these prompts in your target project:
+
+**Claude Code:**
 
 ```text
-Use the ultimate-code-review skill: /code-review --full on this repo,
-prioritized batches, PARTIAL over fake-complete.
+Use the ultimate-code-review skill. Review my uncommitted changes for bugs, security issues, and missing tests. Include new files and do not edit anything.
 ```
 
-Verify: `python3 skills/ultimate-code-review/tests/test_skill.py`
+**Codex:**
 
----
+```text
+Use the ultimate-code-review skill. Review this branch against main using docs/spec.md as the requirements. Report evidence-backed findings with file and line references.
+```
+
+**oh-my-pi:**
+
+```text
+Use the ultimate-code-review skill. Review the last commit for API compatibility and performance. Separate confirmed issues from open questions.
+```
+
+#### ultimate-code-review: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/ultimate-code-review/tests/test_skill.py
+```
+
+Corrections belong to the explicitly requested fix mode (`--fix`); a normal review does not edit files. The documented remote-action rule is “No commit/push ever without approval”. Authorization already granted for that action remains valid.
 
 ### `ultimate-i18n-localization`
 
-i18n/l10n for web (Astro, Next.js/next-intl, React/i18next, Vue/Nuxt, Svelte,
-vanilla) and games (Godot, Defold), plus JSON/YAML/CSV/PO/FTL/XLIFF catalogs.
-Modes: CREATE, AUDIT, FIX (additive-only, re-audited), TRANSLATE (plan+draft,
-human approves), VALIDATE, PSEUDO (grapheme-based expansion stress), REPORT.
-Key/placeholder/plural parity across locales, hreflang per Google rules,
-engine probes where the runtime exists. de/en core, any CLDR language addable
-(ar/he RTL). Never overwrites translations, never ships machine text as
-approved, absent engines report NOT TESTED.
+Check translation catalogs, placeholders, plurals, and locale routing in web and game projects. Use pseudolocalization to expose cramped layouts and untranslated text.
 
-Install only this skill: `tools/install-skills.sh ultimate-i18n-localization`
+Profile: Private and Working. Preparation: Specify the project, reference language, target languages, and task: audit, additive fixes, translation drafts, or validation.
 
-- **Claude Code** (`~/.claude/skills/`): activates on i18n/l10n tasks;
-  TRANSLATE output is a draft until a human approves.
-- **Codex** (`~/.agents/skills/`): name `ultimate-i18n-localization`.
-- **oh-my-pi**: routes from the skill list; `i18n` CLI is the deterministic
-  lane.
+Expected result: A catalog-drift report, additive corrections, or translations clearly marked as drafts.
 
-Shipped: `scripts/i18n` CLI (`audit|check|fix|validate|pseudo|extract|report|
-plan` — stack + locale dir + reference-locale detection, Godot/Lua probes where
-the runtime exists).
+Requirements and limits: Never overwrite existing translations. New translations need human approval. CI blocks on confirmed BLOCKER/HIGH findings; heuristics remain advisory.
 
-```text
-Use the ultimate-i18n-localization skill: audit locales/de.json vs en.json
-parity — keys, placeholders, plurals — and fix drift additively.
+#### ultimate-i18n-localization: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh ultimate-i18n-localization
 ```
 
-```text
-Use the ultimate-i18n-localization skill: CREATE the i18n stack for this Astro
-site (de/en, hreflang, routing) and gate CI on confirmed blockers.
-```
+Try these prompts in your target project:
+
+**Claude Code:**
 
 ```text
-Use the ultimate-i18n-localization skill: add Hebrew as RTL locale — parity
-plan, pseudo stress, hreflang update, nothing shipped untranslated.
+Use the ultimate-i18n-localization skill. Audit src/locales using German as the reference language. Report missing keys, placeholder mismatches, and plural issues without editing files.
 ```
 
-Verify: `node skills/ultimate-i18n-localization/tests/run.mjs`
+**Codex:**
 
----
+```text
+Use the ultimate-i18n-localization skill. Add only missing catalog entries. Preserve existing translations and validate the catalogs again after changes.
+```
+
+**oh-my-pi:**
+
+```text
+Use the ultimate-i18n-localization skill. Plan English and Arabic support for the existing shop. Include locale routing, hreflang, and RTL. Mark new translations as drafts.
+```
+
+#### ultimate-i18n-localization: Self-test
+
+Run from the repository root:
+
+```bash
+node skills/ultimate-i18n-localization/tests/run.mjs
+```
 
 ### `documentation-technical-writing`
 
-Documentation engineering for any project (web, backend, API, CLI, games,
-pipelines, infra, monorepos): CREATE READMEs, API docs, architecture docs,
-ADRs, guides, troubleshooting, tutorials; AUDIT against real project state
-(completeness, correctness, quality, links, secrets); FIX with a P0–P4 ladder;
-SYNC drift; GATE with checks. Evidence tiers
-VERIFIED/DOCUMENTED/PLAUSIBLE/UNKNOWN — endpoints, commands, versions never
-invented. Docs-first changes keep source out of scope unless asked. DE/EN
-follows the project.
+Create and maintain READMEs, API documentation, architecture notes, and guides. Check claims and commands against source files, manifests, and actual verification.
 
-Install only this skill: `tools/install-skills.sh documentation-technical-writing`
+Profile: Private and Working. Preparation: Specify documents, audience, language, and scope. Explain the expected outcome of important steps.
 
-- **Claude Code** (`~/.claude/skills/`): fires on "write a README", "document
-  my API", "audit the docs", "is the documentation still true".
-- **Codex** (`~/.agents/skills/`): name `documentation-technical-writing`.
-- **oh-my-pi**: routes from the skill list; zero-dep Python CLIs carry JSON
-  reports + exit codes.
+Expected result: Updated documentation with practical examples, valid references, and an account of the checks performed.
 
-Shipped: `scripts/docs_audit.py`, `docs_check.py`, `docs_sync.py`, `docs_lib.py`.
+Requirements and limits: Code is the source of truth for technical claims. Commands that were not executed remain NOT RUN. A documentation request does not automatically authorize application code changes.
 
-```text
-Use the documentation-technical-writing skill: audit docs/ against src/ — which
-endpoints and commands are still true? P0-P4 fix list, honest NOT RUN for what
-you cannot execute.
+#### documentation-technical-writing: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh documentation-technical-writing
 ```
 
-```text
-Use the documentation-technical-writing skill: SYNC changelog and README after
-the v2 migration, then GATE before release.
-```
+Try these prompts in your target project:
+
+**Claude Code:**
 
 ```text
-Use the documentation-technical-writing skill: CREATE the ADR set for the new
-caching layer — decisions against the real code, tiers labeled.
+Use the documentation-technical-writing skill. Rewrite README.md in English for new developers. Check installation, start, and test instructions against the project and add a complete getting-started example.
 ```
 
-Verify: `python3 skills/documentation-technical-writing/tests/test_skill.py`
+**Codex:**
 
----
+```text
+Use the documentation-technical-writing skill. Check docs/ against the API implementation. Identify outdated endpoints, incorrect parameters, and commands that no longer match the project.
+```
+
+**oh-my-pi:**
+
+```text
+Use the documentation-technical-writing skill. Update the guides affected by this change. Preserve valid examples and identify commands you could not execute.
+```
+
+#### documentation-technical-writing: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/documentation-technical-writing/tests/test_skill.py
+```
 
 ### `accessibility`
 
-Accessibility engineering and auditing across every web surface (HTML/CSS/
-JS/TS, React, Next.js, Astro, Vue/Svelte, SPAs/SSR/SSG, webshops, dashboards,
-forms, design systems). WCAG 2.2 A/AA binding, AAA as a separate tier. Owns
-the a11y layer across framework skills. Automated PASS ≠ conformance: reports
-always separate automated gate from manual and screenreader evidence.
+Develop accessible interfaces and audit against WCAG 2.2. Combine automated axe checks with keyboard, focus, and screen reader evidence where the environment supports it.
 
-Install only this skill: `tools/install-skills.sh accessibility`
+Profile: Private and Working. Preparation: Specify routes, components, relevant states, and the target level. Include open dialogs and form error states in scope.
 
-- **Claude Code** (`~/.claude/skills/`): activates on a11y/WCAG tasks; the SR
-  harness gates its own environment (Orca/Guidepup) rather than faking passes.
-- **Codex** (`~/.agents/skills/`): name `accessibility`.
-- **oh-my-pi**: routes from the skill list; repo config (Semgrep lane,
-  Playwright Firefox) stays authoritative.
+Expected result: Findings and fixes with separate results for automation, manual review, and screen reader testing.
 
-Mode gate first: Build / Audit (WCAG-EM 2.0 slice) / Remediate. Shipped:
-`scripts/check-standards.mjs <url>` (axe + Playwright audit; JSON/HTML/JUnit/
-SARIF, CI exit codes), `scripts/setup-check.sh` (environment gating).
+Requirements and limits: A/AA form the binding baseline; AAA is a separate quality tier. Automated PASS does not establish full conformance. Screen reader automation requires a suitable environment; report missing prerequisites.
 
-```text
-Use the accessibility skill: audit /checkout for WCAG 2.2 AA — automated axe
-gate plus keyboard/focus evidence, and list what needs manual review.
+#### accessibility: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh accessibility
 ```
 
-```text
-Use the accessibility skill: build the modal keyboard-first (focus trap, ESC,
-restore focus) and prove it with the SR harness or mark the gap honestly.
-```
+Try these prompts in your target project:
+
+**Claude Code:**
 
 ```text
-Use the accessibility skill: is this form WCAG 2.2 AA — labels, errors, focus
-order, contrast? Automated gate and manual checklist, separately.
+Use the accessibility skill. Audit /checkout for WCAG 2.2 AA. Check form errors, keyboard interaction, and focus. Separate automated findings from manual review items.
 ```
 
-Verify: `python3 skills/accessibility/tests/test_skill.py`
+**Codex:**
 
----
+```text
+Use the accessibility skill. Fix the existing dialog so it receives sensible initial focus and returns focus when closed. Test Tab, Shift+Tab, and Escape.
+```
+
+**oh-my-pi:**
+
+```text
+Use the accessibility skill. Check save-status announcements with a screen reader if the environment allows it. Record missing evidence instead of reporting a blanket PASS.
+```
+
+#### accessibility: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/accessibility/tests/test_skill.py
+```
 
 ### `seo-performance`
 
-Technical SEO and web performance for any framework (Astro, Next.js app/pages,
-React/Vite/CSR, static, CMS via URL): crawling, indexability, canonicals,
-sitemaps, robots, hreflang; Core Web Vitals (LCP/INP/CLS/TTFB/TBT) with
-lab-vs-field discipline; delivered-HTML vs JS-rendered DOM checks;
-schema.org/JSON-LD validation; AI-search readiness; approval-gated auto-fixes;
-CI gates; regression monitoring. Works offline, no API keys, never invents
-scores.
+Audit technical SEO, metadata, structured data, and web performance. Distinguish delivered HTML from rendered DOM and lab results from field data.
 
-Install only this skill: `tools/install-skills.sh seo-performance`
+Profile: Private and Working. Preparation: Provide the URL or project path and affected pages. Use comparable conditions for performance measurements.
 
-- **Claude Code** (`~/.claude/skills/`): activates on SEO/speed asks ("why is
-  LCP bad", indexation/schema/hreflang, CI SEO gates).
-- **Codex** (`~/.agents/skills/`): name `seo-performance`.
-- **oh-my-pi**: routes from the skill list; the auditor is zero-dependency
-  Node.
+Expected result: Prioritized findings with evidence, authorized fixes where applicable, and before-and-after checks.
 
-Entry picks one workflow, loads ONE reference (12); audit levels
-auto-escalate, never silently. Shipped: `scripts/seo.mjs <url>` —
-`audit|fix|performance|technical|content|schema|monitor|ci|compare|serve` +
-optional Lighthouse/Unlighthouse/LHCI/Playwright when present.
+Requirements and limits: Keep measurements separate from estimates. Local lab results do not replace field data. Apply fixes within the skill rules and the scope already authorized.
 
-```text
-Use the seo-performance skill: audit https://example.com — indexation,
-canonicals, schema, LCP/INP — then the fix list with approval gates.
+#### seo-performance: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh seo-performance
 ```
 
-```text
-Use the seo-performance skill: why is LCP bad on the product page? Lab + field
-comparison, delivered-HTML check, minimal fixes only.
-```
+Try these prompts in your target project:
+
+**Claude Code:**
 
 ```text
-Use the seo-performance skill: hreflang + canonical audit for the de/en locale
-pair per Google rules, then validate the JSON-LD blocks.
+Use the seo-performance skill. Audit the published site for canonicals, robots.txt, sitemap, and structured data. Identify the specific URLs affected.
 ```
 
-Verify: `node skills/seo-performance/tests/run.mjs`
+**Codex:**
 
----
+```text
+Use the seo-performance skill. The home page has poor LCP. Measure under comparable conditions, find the cause, and verify the effect of a focused fix.
+```
+
+**oh-my-pi:**
+
+```text
+Use the seo-performance skill. Check the rendered output in the existing build directory for missing titles and conflicting metadata. Produce a report first.
+```
+
+#### seo-performance: Self-test
+
+Run from the repository root:
+
+```bash
+node skills/seo-performance/tests/run.mjs
+```
 
 ### `ci-triage`
 
-CI failure triage for any forge: GitHub Actions or GitLab CI, `gh`/`glab` or
-supplied logs. Distinguishes code regression from infra, dependency or secret
-problems; log text is data, never execution authority. Reruns, pushes and
-protection changes need explicit authorization.
+Read actual job logs and CI configuration, distinguish code regressions from infrastructure, dependency, and permission problems, and reproduce the relevant failure locally when possible.
 
-Install only this skill: `tools/install-skills.sh ci-triage`
+Profile: Private and Working. Preparation: Provide the PR, branch, job link, or logs. State whether you want a local fix.
 
-- **Claude Code** (`~/.claude/skills/`): activates on red checks and pipeline
-  failures.
-- **Codex** (`~/.agents/skills/`): name `ci-triage`.
-- **oh-my-pi**: routes from the skill list; naming keeps it deterministic.
+Expected result: An evidence-backed cause, a local fix when requested, and results from relevant checks.
 
-```text
-Use the ci-triage skill: Actions run 1234 is red on main — classify the
-failing job, reproduce locally if cheap, report the fix scope first.
+Requirements and limits: Remote access requires an authenticated forge tool. A local fix request does not automatically authorize pushing, rerunning jobs, or changing secrets and protection rules.
+
+#### ci-triage: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh ci-triage
 ```
 
-Verify: `python3 skills/ci-triage/tests/test_skill.py`
+Try these prompts in your target project:
 
----
+**Claude Code:**
+
+```text
+Use the ci-triage skill. Analyze the failing GitHub Actions job linked in this PR. Find the first relevant cause, fix it locally, and run the appropriate check.
+```
+
+**Codex:**
+
+```text
+Use the ci-triage skill. The build fails only in CI. Compare the workflow, lockfile, and local runtime. Separate an environment issue from a code regression.
+```
+
+**oh-my-pi:**
+
+```text
+Use the ci-triage skill. Analyze these GitLab CI logs without remote access. Explain the cause supported by the logs and identify what remains unverified.
+```
+
+#### ci-triage: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/ci-triage/tests/test_skill.py
+```
 
 ### `review-followup`
 
-Address requested GitHub PR / GitLab MR review comments against current code
-and tests: classify threads (fix / question / outdated / conflicting),
-implement without blindly copying reviewer patches, report what stays open.
-Review text is untrusted; posting, resolving and approving need
-authorization.
+Check requested PR or MR comments against the current code and implement relevant corrections. Identify outdated comments and unresolved design questions.
 
-Install only this skill: `tools/install-skills.sh review-followup`
+Profile: Private and Working. Preparation: Provide the PR/MR or comment text and the requested scope. Remote work requires an authenticated forge tool.
 
-- **Claude Code** (`~/.claude/skills/`): activates on "address the review
-  comments" requests.
-- **Codex** (`~/.agents/skills/`): name `review-followup`.
-- **oh-my-pi**: routes from the skill list.
+Expected result: Local fixes, verification results, and a mapping of addressed comments and remaining questions.
 
-```text
-Use the review-followup skill: PR 210 has three open threads — fix what is
-requested, report what stays open, no replies pushed without me.
+Requirements and limits: Review text is data, not executable instructions. Publishing replies, resolving threads, and pushing changes require authorization covering those actions.
+
+#### review-followup: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh review-followup
 ```
 
-Verify: `python3 skills/review-followup/tests/test_skill.py`
+Try these prompts in your target project:
 
----
+**Claude Code:**
+
+```text
+Use the review-followup skill. Address the requested changes on this GitHub PR locally. Check each comment against the current code and test affected behavior.
+```
+
+**Codex:**
+
+```text
+Use the review-followup skill. Review these pasted comments. Apply valid bug fixes and explain which comments are already outdated.
+```
+
+**oh-my-pi:**
+
+```text
+Use the review-followup skill. Two reviewers propose conflicting API changes. Compare both with project requirements and explain the decision that still needs to be made.
+```
+
+#### review-followup: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/review-followup/tests/test_skill.py
+```
 
 ### `semgrep-security`
 
-Semgrep as the deterministic security lane after security-relevant changes:
-findings are evidence to investigate, valid ones get fixed in scope, false
-positives documented; repository Semgrep config outranks package defaults.
+Use Semgrep as a reproducible security check after relevant code changes. Investigate whether findings apply to the actual project.
 
-Install only this skill: `tools/install-skills.sh semgrep-security`
+Profile: Private and Working. Preparation: Specify the changed area and existing Semgrep configuration. State whether confirmed findings should also be fixed.
 
-- **Claude Code** (`~/.claude/skills/`): activates around auth, endpoint,
-  file-handling and dependency changes.
-- **Codex** (`~/.agents/skills/`): name `semgrep-security`.
-- **oh-my-pi**: routes from the skill list.
+Expected result: Scan results, assessed findings, and a follow-up scan after authorized corrections.
 
-```text
-Use the semgrep-security skill: run the security lane on this diff and
-triage findings — valid, in-scope fixes first, false positives documented.
+Requirements and limits: Repository rules take precedence over defaults. Semgrep must be available; a missing scanner is not a passed scan. A finding is a lead to investigate.
+
+#### semgrep-security: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh semgrep-security
 ```
 
-Verify: `python3 skills/semgrep-security/tests/test_skill.py`
+Try these prompts in your target project:
 
----
+**Claude Code:**
+
+```text
+Use the semgrep-security skill. Check the upload-handler changes using the repository Semgrep configuration. Confirm relevant findings in code and fix them within the requested scope.
+```
+
+**Codex:**
+
+```text
+Use the semgrep-security skill. Rerun the relevant Semgrep check after the authentication fix. Report the configuration, scanned scope, and remaining findings.
+```
+
+**oh-my-pi:**
+
+```text
+Use the semgrep-security skill. Assess this Semgrep finding using the data flow. Explain whether it applies and briefly document a false positive if appropriate.
+```
+
+#### semgrep-security: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/semgrep-security/tests/test_skill.py
+```
 
 ### `playwright`
 
-Terminal browser automation for UI exploration, snapshots and interaction
-reproduction: one session per project/purpose, fresh snapshots before element
-references, Firefox default unless the repo pins another browser. Complements
-repository test suites, never replaces them; unrun checks are never reported
-as passed. Needs an existing Playwright CLI — the skill installs nothing.
+Use existing terminal browser tools to open pages, inspect states, reproduce interactions, and capture screenshots or traces.
 
-Install only this skill: `tools/install-skills.sh playwright`
+Profile: Private and Working. Preparation: Provide the URL, start command, flow, and expected result. Use the intended secure context for test credentials.
 
-- **Claude Code** (`~/.claude/skills/`): activates on UI inspection and
-  reproduction requests.
-- **Codex** (`~/.agents/skills/`): name `playwright`.
-- **oh-my-pi**: routes from the skill list.
+Expected result: A reproducible flow with observed states, browser errors, and useful artifacts.
 
-```text
-Use the playwright skill: open the staging checkout page, snapshot it, and
-reproduce the double-submit on slow networks — screenshots into
-output/playwright/.
+Requirements and limits: Firefox is the default unless the repository requires another browser. Prefer existing project tools; do not install a second global CLI just because the skill is present. Use element references from a fresh snapshot.
+
+#### playwright: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh playwright
 ```
 
-Verify: `python3 skills/playwright/tests/test_skill.py`
+Try these prompts in your target project:
 
----
-
-### `design-authenticity`
-
-Design authenticity and anti-AI-slop discipline for any UI (websites, SaaS,
-dashboards, docs, PWAs, game menus/HUDs; audits of React/Next/Astro projects).
-Modes CREATE / REVIEW / REFACTOR / GUARD. Product-context-first identity, a
-Design Identity Engine, Anti-AI-Slop detection (default gradients, hero+card
-templates, glass/glow blobs, decoration without purpose), a 100-pt visual gate
-(target ≥90), screenshot review when a browser exists, WCAG AA as hard floor.
-Framework skills own architecture, accessibility owns a11y; this owns
-originality, coherence, product-fit. Zero external services.
-
-Install only this skill: `tools/install-skills.sh design-authenticity`
-
-- **Claude Code** (`~/.claude/skills/`): activates on design/identity/review;
-  scores only with visual comparison, else flags for review.
-- **Codex** (`~/.agents/skills/`): name `design-authenticity`.
-- **oh-my-pi**: routes from the skill list; screenshot review when a browser
-  exists, otherwise flagged, not scored.
-
-Shipped: `scripts/validate_config.mjs` (identity-config schema),
-`scripts/screenshot_audit.sh <url>` when a browser is available.
+**Claude Code:**
 
 ```text
-Use the design-authenticity skill: REVIEW the landing page — score on the
-100-pt gate, flag every generic pattern with file:line, propose product-fit
-replacements.
+Use the playwright skill. Open http://localhost:4321 in Firefox and check the mobile menu. Record opening, navigation, and closing using fresh snapshots.
 ```
+
+**Codex:**
 
 ```text
-Use the design-authenticity skill: CREATE the visual identity for a docs
-product — typography, color, layout rationale — brand-preserving, no templates.
+Use the playwright skill. Reproduce the search-dialog bug: after Escape, it cannot be reopened. Check browser errors and capture a trace if needed.
 ```
+
+**oh-my-pi:**
 
 ```text
-Use the design-authenticity skill: GUARD — check my next component PR against
-the identity rules before I merge.
+Use the playwright skill. Check the local login flow with the designated test data. Use a separate project session and record the result.
 ```
 
-Verify: `python3 skills/design-authenticity/tests/test_skill.py`
+#### playwright: Self-test
 
----
+Run from the repository root:
 
-### `design-system-ui`
-
-Design-system and UI-component engineering for any web project (plus game-UI
-token concepts for Godot/Defold). CREATE token systems (DTCG v2025.10), AUDIT
-inconsistency (duplicate colors/buttons/spacing, broken dark mode, unused
-tokens), FIX safely, MIGRATE legacy UI, VALIDATE tokens/themes, DOCUMENT
-components. Boundaries: one-off styling is not a system (just style it); deep
-a11y → accessibility; aesthetic originality → design-authenticity; E2E/browser
-QA → ultimate-testing-qa.
-
-Install only this skill: `tools/install-skills.sh design-system-ui`
-
-- **Claude Code** (`~/.claude/skills/`): triggers on "design system", "design
-  tokens", "dark mode broken", "duplicate components".
-- **Codex** (`~/.agents/skills/`): name `design-system-ui`.
-- **oh-my-pi**: routes from the skill list; `ds.mjs` is the deterministic lane.
-
-Evidence before edits; token builds run through the shipped pipeline. Shipped:
-`scripts/ds.mjs` (zero-dep `detect|tokens|audit|report` + token build,
-file:line evidence).
-
-```text
-Use the design-system-ui skill: audit this Astro project for duplicate colors
-and spacing — file:line evidence, then the safe fix order.
+```bash
+python3 skills/playwright/tests/test_skill.py
 ```
-
-```text
-Use the design-system-ui skill: CREATE a DTCG token system from our exported
-palette; build step, no runtime dependency.
-```
-
-```text
-Use the design-system-ui skill: dark mode breaks in three components — audit,
-fix, and document the token contract that prevents regressions.
-```
-
-Verify: `node skills/design-system-ui/tests/run.mjs`
-
----
-
-### `figma-source-of-truth`
-
-Figma-as-source-of-truth UI policy for projects that have a Figma design
-system: Figma and Code Connect decisions outrank general frontend guidance;
-implementation must not invent a competing design system. Tokens come from
-the Figma library, production components get reused, divergence is reported
-with node names — never silently redesigned. Inert without Figma:
-`design-authenticity` and `design-system-ui` stay in charge there.
-
-Install only this skill: `tools/install-skills.sh figma-source-of-truth`
-
-- **Claude Code** (`~/.claude/skills/`): activates on UI work in projects
-  with Figma files or Code Connect mappings.
-- **Codex** (`~/.agents/skills/`): name `figma-source-of-truth`.
-- **oh-my-pi**: routes from the skill list; the scope gate keeps it inert
-  without Figma.
-
-```text
-Use the figma-source-of-truth skill: build the checkout component against
-Figma node 12:340; Code Connect maps it to <CheckoutSummary>.
-```
-
-```text
-Use the figma-source-of-truth skill: our button diverges from the library —
-report the mismatch against the named nodes, do not redesign.
-```
-
-Verify: `python3 skills/figma-source-of-truth/tests/test_skill.py`
-
----
-
-### `human-writing`
-
-Human prose in German and English: generate, rewrite, audit, calibrate blog
-posts, docs, READMEs, marketing copy, UX texts, creative writing, dialogue,
-emails, reports. Anti-AI-slop rules and personal-voice preservation. Detection
-and rules only — reports never assert authorship; rewriting is authored by the
-agent and applied only after approval. Python 3.10+, stdlib only, offline
-(network only for public URL audits).
-
-Install only this skill: `tools/install-skills.sh human-writing`
-
-- **Claude Code** (`~/.claude/skills/`): activates on write/humanize/de-slop/
-  audit-text; reports stay authorship-free.
-- **Codex** (`~/.agents/skills/`): name `human-writing`; rewrite applies only
-  after you approve the diff.
-- **oh-my-pi**: routes from the skill list; project rewrite defaults to
-  dry-run.
-
-Mode selection first (generate/rewrite/audit/calibrate). Shipped:
-`scripts/lint_text.py` (offline), `website_audit.py` (SSRF-guarded crawler,
-fixtures mode), `project_audit.py` (safe rewrite, dry-run default; `hw_*.py`
-libs).
-
-```text
-Use the human-writing skill: audit the prose on https://example.com/blog —
-slop patterns, rhythm, voice — report only, no edits.
-```
-
-```text
-Use the human-writing skill: de-slop docs/README.md EN + DE, keep terminology,
-show the lint verdict before and after.
-```
-
-```text
-Use the human-writing skill: rewrite these three changelog versions against my
-previous posts — which is most me? Evidence, not vibes.
-```
-
-Verify: `python3 skills/human-writing/tests/test_lint_text.py` (also
-`test_project_audit.py`, `test_website_audit.py`)
-
----
 
 ### `agent-harness-engineering`
 
-Engineering of the machinery around the model: agent architectures, tool
-definitions, observation contracts, context budgets, error recovery, loop
-detection, multi-agent coordination, benchmarks, traces. Platform-independent
-core (Claude Code, Codex, MCP, own Python/TS agents) + stdlib-only Python
-CLIs; unobservable areas report UNVERIFIED, skipped categories never distort
-the 0..100 score, offline benchmarks stay labeled offline. Skill selection
-stays with skill-orchestrator; this skill owns the agent runtime.
+Audit tools, observation formats, context budgets, error handling, loops, and agent coordination. Python tools analyze real configurations and recorded traces.
 
-Install only this skill: `tools/install-skills.sh agent-harness-engineering`
+Profile: Private and Working. Preparation: Provide the harness directory, tool definitions, and traces or benchmarks for runtime questions.
 
-- **Claude Code** / **Codex** / **oh-my-pi**: name `agent-harness-engineering`
-  plus the ask — audit, fix plan (dry-run), benchmark, security scan.
+Expected result: An evidence-backed audit, contract validation, or comparison that distinguishes recorded data from live measurements.
 
-```text
-Use the agent-harness-engineering skill: audit this project's agent harness,
-show score + findings, dry-run the fix plan; no writes without approval.
+Requirements and limits: Unobservable areas remain UNVERIFIED or are skipped with a reason. Label offline benchmarks as offline. Use skill-orchestrator for choosing skills for a product task.
+
+#### agent-harness-engineering: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh agent-harness-engineering
 ```
 
+Try these prompts in your target project:
+
+**Claude Code:**
+
 ```text
-Use the agent-harness-engineering skill: benchmark tool calls before/after
-the tool-granularity change and flag any regression.
+Use the agent-harness-engineering skill. Audit our agent harness for duplicate tools, swallowed errors, and unbounded retries. Start with an evidence-backed report.
 ```
 
-CLIs: `scripts/{audit_harness,validate_tools,validate_observations,
-analyze_context,detect_loops,analyze_traces,security_scan,benchmark_agent,
-compare_benchmarks,generate_report}.py` — `--help` everywhere, JSON+Markdown
-out. Contracts in `schemas/`, depth in `references/`.
+**Codex:**
 
-Verify: `python3 skills/agent-harness-engineering/tests/test_skill.py`
+```text
+Use the agent-harness-engineering skill. Analyze trace.json for repeated identical tool calls. Identify the steps and propose a bounded retry strategy.
+```
 
----
+**oh-my-pi:**
+
+```text
+Use the agent-harness-engineering skill. Compare stored benchmarks before and after the tool change. Report regressions and label the comparison as offline.
+```
+
+#### agent-harness-engineering: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/agent-harness-engineering/tests/test_skill.py
+```
 
 ### `lean-engineering`
 
-Cross-cutting lean engineering mode for any coding task in any stack (JS/TS,
-React/Next, Astro, Python, backends, CLIs, Lua/Defold, GDScript/Godot,
-Blender Python; unknown → cautious generic): the simplest COMPLETE, correct,
-maintainable solution — not the shortest code. A 7-rung ladder (need? reuse?
-extend? stdlib? installed dep? few edits? abstraction last) before new code,
-a never-cut floor (security, validation, error handling, a11y, tests, perf,
-requested features), session modes lite/full/ultra/off, and /lean review,
-/lean audit (7-field findings), /lean simplify (behavior-preserving),
-/lean debt (shortcut ledger). Decides scope/simplicity; domain skills keep
-their checks. No scripts, no runtime — instructions plus stdlib self-test.
-Triggers: "lean", "yagni", "over-engineered", "/lean ...".
+Avoid unnecessary abstractions, dependencies, and configuration during implementation and refactoring. Preserve requirements and architecture that the project needs.
 
-Install only this skill: `tools/install-skills.sh lean-engineering`
+Profile: Private and Working. Preparation: Describe the task, existing interfaces, and constraints. Choose lite, full, ultra, or off to set the intensity.
 
-- **Claude Code** (`~/.claude/skills/`): fires on coding asks + "lean",
-  "yagni", "/lean <mode>" (argument-hint in frontmatter).
-- **Codex** (`~/.agents/skills/`): name `lean-engineering`; slash-phrases
-  matched as plain text.
-- **oh-my-pi**: loaded from the roots; mode sticky per session until
-  `/lean off`; stateless hosts restate "lean mode: full" per turn.
+Expected result: A complete implementation or audit with concrete simplifications and reasons for keeping necessary structure.
 
-```text
-Use the lean-engineering skill: add CSV export to /api/reports — leanest
-complete solution, no new dependencies, tests for new logic.
+Requirements and limits: Do not cut security, validation, persistence, performance, accessibility, or necessary tests. Restate the desired mode when the host does not retain session state.
+
+#### lean-engineering: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh lean-engineering
 ```
 
-```text
-Use the lean-engineering skill: /lean audit src/ — over-engineering scan,
-7-field findings, KEEP rows for architecture that earns its keep.
-```
+Try these prompts in your target project:
+
+**Claude Code:**
 
 ```text
-Use the lean-engineering skill: /lean simplify packages/core/pricing.ts —
-identical behavior, public API frozen, project tests per step.
+Use the lean-engineering skill. Use lean mode full. Add CSV export to existing reports. Reuse installed libraries and preserve authorization and error handling.
 ```
 
-Verify: `python3 skills/lean-engineering/tests/test_skill.py`
+**Codex:**
 
----
+```text
+Use the lean-engineering skill. Audit src/ for unnecessary abstractions. Also explain which structures should stay because they satisfy real requirements.
+```
+
+**oh-my-pi:**
+
+```text
+Use the lean-engineering skill. Simplify the configuration parser without changing behavior. Preserve the file format and public API and check existing error cases.
+```
+
+#### lean-engineering: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/lean-engineering/tests/test_skill.py
+```
+
+#### lean-engineering: Modes and commands
+
+Modes `lite`, `full`, `ultra`, and `off` set the intensity. Commands such as
+`/lean review`, `/lean audit`, `/lean simplify`, `/lean debt`, `/lean status`,
+and `/lean help` name workflows. If the host has no registered slash command,
+spell out the skill name and task instead.
+
+#### lean-engineering: Collaboration and limits
+
+During collaboration, project rules and domain requirements remain binding.
+These limits also apply in ultra mode: a smaller diff does not justify removing
+validation or error handling.
+
+#### lean-engineering: Troubleshooting
+
+If a new session does not retain the mode, state it again. Installation and
+examples appear above. An audit can also explain why an apparently complicated
+structure is necessary.
+
+### `design-authenticity`
+
+Create or review a visual identity based on the product, audience, and use. Assess typography, color, layout, and generic patterns against actual interfaces.
+
+Profile: Private. Preparation: Provide the product context, audience, existing brand, and surface. Visual reviews require screenshots or browser access.
+
+Expected result: A reasoned design direction, evidence-backed visual review, or revision with before-and-after comparison.
+
+Requirements and limits: WCAG AA is the floor. Scores require visual review; otherwise report VISUAL_REVIEW_REQUIRED. Existing brand and design requirements remain binding.
+
+#### design-authenticity: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh design-authenticity
+```
+
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
+
+```bash
+tools/install-skills.sh --claude private
+```
+
+Try these prompts in your target project:
+
+**Claude Code:**
+
+```text
+Use the design-authenticity skill. REVIEW the existing home page. Identify generic patterns and justify changes using our product context and existing brand.
+```
+
+**Codex:**
+
+```text
+Use the design-authenticity skill. CREATE a visual direction for a research tool. Explain typography, density, and color choices for long reading sessions.
+```
+
+**oh-my-pi:**
+
+```text
+Use the design-authenticity skill. Use GUARD mode to check the new component against our identity rules. Compare its screenshot with existing screens.
+```
+
+#### design-authenticity: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/design-authenticity/tests/test_skill.py
+```
+
+### `design-system-ui`
+
+Create and audit design tokens, themes, and reusable components. Find duplicate colors, inconsistent spacing, and components that bypass the existing system.
+
+Profile: Private. Preparation: Provide the project, token sources, themes, and affected components. Specify audit versus implementation.
+
+Expected result: File-and-line findings, validated tokens, or an incremental migration with documented component contracts.
+
+Requirements and limits: The system follows the project visual identity. The Node tool needs no extra packages. Figma requirements remain binding when Figma is the design source.
+
+#### design-system-ui: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh design-system-ui
+```
+
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
+
+```bash
+tools/install-skills.sh --claude private
+```
+
+Try these prompts in your target project:
+
+**Claude Code:**
+
+```text
+Use the design-system-ui skill. Audit src/ for duplicate colors, spacing, and button variants. Report file and line and propose a safe cleanup order.
+```
+
+**Codex:**
+
+```text
+Use the design-system-ui skill. Dark mode is broken in three components. Find token mismatches, fix them, and verify both themes and focus states.
+```
+
+**oh-my-pi:**
+
+```text
+Use the design-system-ui skill. Create a DTCG token model from our existing palette for light and dark themes. Use a build step and document semantic tokens.
+```
+
+#### design-system-ui: Self-test
+
+Run from the repository root:
+
+```bash
+node skills/design-system-ui/tests/run.mjs
+```
+
+### `figma-source-of-truth`
+
+Keep the Figma design system, variables, and Code Connect mappings authoritative during UI implementation. Reuse production components and report concrete deviations.
+
+Profile: Working. Preparation: Provide the Figma file and node, relevant library, and existing Code Connect mappings.
+
+Expected result: An implementation using existing components and tokens, or an evidence-backed mismatch report naming the relevant nodes.
+
+Requirements and limits: This Working-profile skill applies only when Figma is involved. It does not provide a Figma connection. Required plugin tools and their own prerequisites must be available.
+
+#### figma-source-of-truth: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh figma-source-of-truth
+```
+
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
+
+```bash
+tools/install-skills.sh --claude working
+```
+
+Try these prompts in your target project:
+
+**Claude Code:**
+
+```text
+Use the figma-source-of-truth skill. Implement the checkout view from the supplied Figma node. Use existing Code Connect components and library variables.
+```
+
+**Codex:**
+
+```text
+Use the figma-source-of-truth skill. Compare our button with the supplied library node. Report mismatched states, dimensions, and tokens without introducing a new design.
+```
+
+**oh-my-pi:**
+
+```text
+Use the figma-source-of-truth skill. Before implementation, check which components already have mappings. Identify missing mappings and unresolved design decisions.
+```
+
+#### figma-source-of-truth: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/figma-source-of-truth/tests/test_skill.py
+```
+
+### `human-writing`
+
+Write and revise English and German documentation, website copy, articles, UX text, and creative prose. Preserve facts, terminology, and the author’s voice.
+
+Profile: Private and Working. Preparation: Provide the text or path, audience, language, and purpose. Include representative writing samples when voice matters.
+
+Expected result: A revision or audit with concrete observations. Python tools detect patterns; the agent writes the replacement prose.
+
+Requirements and limits: Lint findings do not identify authorship. Protect code, URLs, technical terms, and facts. Project rewrites start as dry runs and are applied within the approval already given.
+
+#### human-writing: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh human-writing
+```
+
+Try these prompts in your target project:
+
+**Claude Code:**
+
+```text
+Use the human-writing skill. Rewrite README.md in English for developers seeing the project for the first time. Preserve commands, links, and facts, and replace filler with concrete explanations.
+```
+
+**Codex:**
+
+```text
+Use the human-writing skill. Audit these three posts for repetition and empty phrasing. Report only, with a suggested improvement for each finding.
+```
+
+**oh-my-pi:**
+
+```text
+Use the human-writing skill. Rewrite the introduction using my supplied samples as a voice reference. Preserve my tone and do not invent product promises.
+```
+
+#### human-writing: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/human-writing/tests/test_lint_text.py
+```
 
 ### `skill-orchestrator`
 
-Quality and orchestration manager for this repository itself: discovery,
-inventory, validation, audit, scoring, routing plans, overlap truth,
-regression snapshots, repair proposals. Deterministic Python 3 CLI over real
-files — discovery never invents skills, scoring never credits unchecked areas,
-agent-evals report UNAVAILABLE instead of faking passes. Read-only by default;
-repairs are proposals until approved. Coordinates other skills without
-duplicating their domains.
+Inventory actual skills, validate their structure, and investigate overlap. Produce a reasoned skill selection and sequence for a concrete task.
 
-Install only this skill: `tools/install-skills.sh skill-orchestrator`
-(inside this checkout the CLI also runs directly from `scripts/`, installed or
-not).
+Profile: Private and Working. Preparation: Provide the collection or skill and the requested check. For routing, describe the task and its requirements.
 
-- **Claude Code** (`~/.claude/skills/`): activates on repo-level questions
-  ("audit my skill collection", "is skill X valid?", "which skills serve
-  this?").
-- **Codex** (`~/.agents/skills/`): name `skill-orchestrator`.
-- **oh-my-pi**: routes from the skill list; plans stay honest about what was
-  evaluated.
+Expected result: A reproducible report, routing plan, or repair proposal with explicit verification limits.
 
-Commands `scan|audit|overlap|route|plan|test|eval|fix|report|doctor`, profiles
-`portable|claude|codex`, `--json` for machine output; `fix` rewrites nothing
-without approval.
+Requirements and limits: Read-only by default. Repairs remain proposals until approved. Agent evaluations that were not run remain UNAVAILABLE; test files do not count as executed tests.
 
-```text
-Use the skill-orchestrator skill: audit the collection, profile portable, show
-the regression diff against the stored baseline.
-```
+#### skill-orchestrator: Installation and examples
 
-```text
-Use the skill-orchestrator skill: route "accessible Astro marketing site with
-i18n and SEO gates" — which skills, in which order, why.
-```
-
-Verify: `python3 skills/skill-orchestrator/tests/test_orchestrator.py`
-
-This suite also validates collection metadata with the shared validator.
-Static audits award at most 5/15 test points for test structure; test
-execution and behavior remain NOT RUN and earn no points until verified.
-
----
-
-Every skill additionally carries `references/` deep docs (5–27 files each),
-loaded by its SKILL.md routing tables only when the task needs them.
-
-## Install (Claude Code + Codex, profile-routed)
+Install from the repository root:
 
 ```bash
-tools/install-skills.sh                  # symlink ALL skills, routed by scope
-tools/install-skills.sh godot astro      # symlink ONLY the named skills
-tools/install-skills.sh --claude private # sync Claude's shared root to Private
-tools/install-skills.sh --claude working # sync Claude's shared root to Working
-tools/uninstall-skills.sh                # remove ONLY links this repo created
-tools/uninstall-skills.sh godot          # remove ONLY the named skills
+tools/install-skills.sh skill-orchestrator
 ```
 
-Idempotent; foreign skills in the target dirs are never modified. Skill names
-are the directory names under `skills/`; an unknown name aborts the install
-before anything is linked. Installed links are recorded in
-`.installed-manifest` (`<skill-name><TAB><target-root>` per line); the
-uninstaller trusts only that manifest and keeps entries for skills that
-remain installed.
+Try these prompts in your target project:
 
-### Profile routing
+**Claude Code:**
 
-`tools/profile-map.tsv` (`<skill-name><TAB>private|working|both`, unlisted =
-`both`) routes each skill into the roots of the matching agent profile, so the
-Private profile never sees Working-only skills and vice versa. The dev-setup
-stack (`mm-profile-skills-sync`) enforces the same split for its own `mm-*`
-package skills; the roots below mirror its `target_dir` convention.
-
-| Scope | Roots (exclusive — never the other scopes' roots) |
-|---|---|
-| `both` | `~/.claude/skills`, `~/.agents/skills`, and both native OMP profile skill directories |
-| `private` | `~/.omp/profiles/private/agent/skills`, `~/.codex/skills` |
-| `working` | `~/.omp/profiles/working/agent/skills`, `$STACK/codex-working-home/skills` |
-
-Common skills are linked directly into both OMP profiles so discovery does not
-depend on importing another client's user skill directories. These links expose
-metadata; full skill instructions are read only when selected for a task.
-
-Routing is exclusive, matching the dev-setup `payload/{private,working}` split:
-a scoped skill is absent from the shared roots and from the other profile, so
-omp profiles, private Codex, and working Codex never cross the boundary.
-Claude Code is the exception the stack also makes: it has one shared dir, so
-`install-skills.sh --claude private|working` rewrites `~/.claude/skills` at
-launch time (last profile launched wins) — same semantics as the stack's
-`mm-profile-skills-sync` in the `claude-private`/`claude-working` wrappers;
-durable omp/Codex roots stay untouched. Current routing: game-dev skills
-(`lowpoly-reference-to-blender`, `defold-development`, `godot`,
-`game-asset-pipeline-shaders`, `game-audio-sound-design`), `astro`,
-`design-authenticity`, and `design-system-ui` are `private`; `react-nextjs`
-and `figma-source-of-truth` are `working`; everything else is `both`.
-
-Reinstalling a skill after its scope changed prunes the stale links from the
-no-longer-owned profile roots and rewrites the manifest rows. Installer and
-uninstaller require `flock`, share a repository lock, and replace the manifest
-atomically. Installer tests use a temporary repository and leave the live
-installation manifest untouched.
-
-Verify what is installed: `cat .installed-manifest` (untracked, local state).
-
-## Use
-
-Detailed per-skill usage (Claude Code, Codex, oh-my-pi invocation plus
-copy-paste examples) lives in the [Skills](#skills) sections above — that is
-the canonical text. `skills/<name>/USAGE.md` mirrors the same guide into the
-symlinked skill folder so an agent browsing the directory locally sees it too.
-When a skill's scripts or entry points change, update both.
-
-```
-Use lowpoly-reference-to-blender to build a high-quality game-ready low-poly
-character for Riff Racers from this concept art.
+```text
+Use the skill-orchestrator skill. Audit this skill collection using the portable profile. Report structural errors, overlaps, and areas you could not evaluate.
 ```
 
-Optional parameters (asset_type, polygon_budget, quality_profile, views, …)
-are documented in each SKILL.md; defaults are sane, the agent only stops for
-missing references or contradictory specs.
+**Codex:**
 
-## Validate
+```text
+Use the skill-orchestrator skill. Which skills fit an accessible Astro website with localization? Explain selection and order without activating the entire collection.
+```
 
-Full-suite runs (from the repo root):
+**oh-my-pi:**
+
+```text
+Use the skill-orchestrator skill. Check human-writing and documentation-technical-writing for conflicting responsibilities. Propose focused corrections without editing files.
+```
+
+#### skill-orchestrator: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/skill-orchestrator/tests/test_orchestrator.py
+```
+
+## Validate and maintain the collection
+
+Run these commands from the repository root. They exercise different parts of
+the collection. Passing self-tests does not mean every target application or
+external integration has been tested.
 
 ```bash
 blender -b --python skills/lowpoly-reference-to-blender/tests/test_e2e_pipeline.py
 python3 -m py_compile skills/*/scripts/*.py skills/*/tests/*.py
+node skills/design-system-ui/tests/run.mjs
 TEST_HOME=$(mktemp -d) bash tools/test_installer.sh
 python3 skills/godot/tests/test_skill.py
 bash skills/godot/scripts/headless_check.sh skills/godot/examples/base-project
 ```
 
-Per-skill entry points are in the Verify column of each table above. Each
-skill is independently installable, independently testable, and versionable
-on its own.
+Additional self-tests are listed with each skill. Blender and Godot checks
+require their engines. Browser, screen reader, audio, and GPU checks need their
+respective environments. Report missing prerequisites rather than a passed check.
 
-## Adding skills
+Follow [docs/adding-new-skills.md](docs/adding-new-skills.md) when adding a skill.
+Every skill requires YAML frontmatter with `name` and `description`; the name
+must match its directory. When scripts or entry points change, update this
+skill section and its local README together.
 
-`docs/adding-new-skills.md`. Each skill stays independent: its own directory,
-testable on its own, versionable on its own.
+### Documented local environment
 
-## Environment truth (last probe: 2026-11-13)
-
-Blender **5.3.0** (`02f0899d`, bundled Python 3.13) at
-`~/.local/opt/blender-5.3.0-linux-x64/blender`; BlenderMCP addon 1.8 live
-(protocol 15); system `python3` 3.14 without `bpy`.
-Godot **4.7.2-stable** (`ed1daf0b`) at `~/.local/opt/godot-4.7.2/godot`,
-on PATH as `godot`; headless import/run verified.
+Repository instructions record Blender 5.3.0, hash `02f0899d`, with bundled
+Python 3.13, and Godot 4.7.2-stable, commit `ed1daf0b`. These describe the
+documented local baseline, not requirements for every target project or versions
+newly measured during this documentation change. System Python has no `bpy`;
+run scripts importing it inside Blender. Verify engine and framework claims
+again when working on the target project.

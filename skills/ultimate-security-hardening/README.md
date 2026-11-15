@@ -1,74 +1,75 @@
-# Ultimate Security & Hardening
+# ultimate-security-hardening
 
-Universal security audit + remediation skill for AI coding agents (Claude
-Code, Codex, any SKILL.md-consumer). Audits any project against
-OWASP Top 10:2025 / ASVS 5.0.0 / API-Top10 / WSTG / CWE, CONFIRMS findings
-with code evidence, applies safe fixes, verifies each fix with regression
-tests + re-scan, and reports honestly (tool gap = INCOMPLETE, never PASS).
+Inspect attack surfaces, confirm suspected vulnerabilities in code, and verify fixes with regression tests and another scan. Cover application code, dependencies, and infrastructure as needed.
 
-Spine: `DISCOVER → THREAT MODEL → AUDIT → VALIDATE → PRIORITIZE → FIX →
-REGRESSION TEST → RE-SCAN → REPORT`.
+Profile: Private and Working. Preparation: Specify the project and relevant features. State whether you want findings only or local fixes as well.
 
-## Structure
+Expected result: Prioritized findings with code evidence, tool coverage, fix status, and verification results.
 
-```
-SKILL.md              workflow spine + mode gate (start here)
-references/           load per module: standards, audit-modules §A–§J,
-                      auth/api/frontend/deps/infra, tooling, remediation,
-                      risk-scoring, ci-cd — progressive disclosure
-workflows/            6 runnable procedures (audit/fix/verify/gate/threat-model/quick)
-scripts/              executable: detect-project.sh · check-tools.sh ·
-                      run-security-audit.sh (fallback scanner) · validate-report.py
-templates/            report · finding · remediation-plan · security-config.yml
-tests/                self-test + vulnerable/clean fixture apps (synthetic only)
-```
+Requirements and limits: Missing scanners and untested areas remain coverage gaps. A report does not guarantee complete security. Keep secrets out of output; high-risk actions require appropriate authorization.
 
-## Use
+## ultimate-security-hardening: Installation and examples
 
-Invoke by name or phrase ("audit this project for vulnerabilities", "fix
-the security issues", "pre-release security check"). Pick a mode from the
-SKILL.md gate; run the scripts from the skill dir against the target:
+Install from the repository root:
 
 ```bash
-bash scripts/detect-project.sh /path/to/project     # stack + surfaces
-bash scripts/check-tools.sh /path/to/project        # tool ledger
-bash scripts/run-security-audit.sh all /path/to/project   # heuristic lanes
-python3 scripts/validate-report.py --dir /path/to/project/security-reports
-python3 tests/test_skill.py                          # skill self-test
+tools/install-skills.sh ultimate-security-hardening
 ```
 
-Autofix ladder: SAFE AUTO-FIX applied in-session · REVIEW REQUIRED proposed
-as diff · HIGH-RISK blocked for approval. Secrets masked in every output;
-user changes never reverted; scanner errors surface as coverage gaps.
+Try these prompts in your target project:
 
-## Install (Claude Code + Codex)
+**Claude Code:**
+
+```text
+Use the ultimate-security-hardening skill. Audit the API service for authentication and authorization defects. Confirm findings with code evidence and report without editing files.
+```
+
+**Codex:**
+
+```text
+Use the ultimate-security-hardening skill. Fix the confirmed IDOR in order access. Add a regression test for another user and rerun the relevant security check.
+```
+
+**oh-my-pi:**
+
+```text
+Use the ultimate-security-hardening skill. Check dependencies, containers, and configuration before release. List available scanners, missing coverage, and remaining blockers.
+```
+
+## ultimate-security-hardening: Self-test
+
+Run from the repository root:
 
 ```bash
-tools/install-skills.sh   # repo installer symlinks into ~/.claude/skills + ~/.agents/skills
+python3 skills/ultimate-security-hardening/tests/test_skill.py
 ```
 
-## Report contract
+## Files and further reading
 
-`security-reports/{security-report.md, security-findings.json,
-security-fixes.md, security-test-results.md}` — verdicts
-PASS/PASS WITH WARNINGS/BLOCKED/INCOMPLETE, fix statuses
-FIXED→FALSE POSITIVE, finding statuses Confirmed→Not-Applicable.
-Schema enforced by `validate-report.py` (secrets-in-report = fail).
+Start with [SKILL.md](SKILL.md) for the binding agent workflow. This README
+contains the usage guide, host examples, and direct tool instructions.
 
-## Skill interop
+- [references/](references/): Detailed guidance and rules.
+- [workflows/](workflows/): Task-specific procedures.
+- [templates/](templates/): Templates for the target project.
+- [tests/](tests/): Self-tests and fixtures.
 
-Independent. QA/Testing skill runs functional tests, framework skills own
-idioms, Accessibility stays separate — no hard dependencies; missing skills
-never block this workflow. Security regression tests join the project's
-existing runner.
+These files are present in the skill directory. Check the relevant workflow
+or command help before running a tool directly. Helper modules are not
+standalone CLI entry points.
 
-## Maintenance
+- [check-tools.sh](scripts/check-tools.sh)
+- [detect-project.sh](scripts/detect-project.sh)
+- [run-security-audit.sh](scripts/run-security-audit.sh)
+- [validate-report.py](scripts/validate-report.py)
 
-- Re-verify standards table (`references/security-standards.md`) annually
-  or on OWASP/CWE release; update versions + probe dates.
-- Re-probe tool CLIs (`check-tools.sh`) when adding scanners; syntax via
-  `--help` before documenting.
-- New module → `audit-modules.md` section + SKILL.md mode gate row + test
-  fixture + run `python3 tests/test_skill.py`.
-- Fallback scanner patterns live in `run-security-audit.sh`; extend
-  patterns with a fixture pair (vulnerable + clean) to keep FP pressure low.
+## Run tools directly
+
+Run these examples from this skill directory, for example after
+`cd skills/ultimate-security-hardening` from the repository root. Replace `/path/...` with
+existing paths. Set up required programs before running the commands.
+
+```bash
+bash scripts/detect-project.sh /path/to/project
+bash scripts/check-tools.sh /path/to/project
+```

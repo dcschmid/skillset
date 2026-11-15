@@ -96,7 +96,7 @@ try:
     repo, env = fixture(tmp)
 
     # ---------- 1 structure & frontmatter ----------
-    for p in ["SKILL.md", "README.md", "USAGE.md", "SKILL.md"]:
+    for p in ["SKILL.md", "README.md"]:
         check(f"exists {p}", (ROOT / p).is_file())
     for p in ["agents/standards-reviewer.md", "agents/spec-reviewer.md",
               "agents/bug-reviewer.md", "agents/security-reviewer.md",

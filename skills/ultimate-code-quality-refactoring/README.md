@@ -1,98 +1,83 @@
-# Ultimate Code Quality & Refactoring
+# ultimate-code-quality-refactoring
 
-Audit-first, verify-always skill for improving existing codebases without
-silent regressions. Language-agnostic; edits only in explicit fix modes;
-every claim traces to a `file:line` or a measured number.
+Find complex code, duplication, dead code, and problematic module boundaries. Preserve behavior during refactoring and verify each step against a baseline.
 
-## Tasks
+Profile: Private and Working. Preparation: Specify directories or files, audit versus implementation, and public interfaces that must remain stable.
 
-technical debt · code smells · duplication · complexity · dead code ·
-architecture/boundaries · perf hypotheses · type/error-handling consistency ·
-modularity · safe refactoring · baseline comparisons · pre-merge gates.
+Expected result: Evidence-backed findings or a verified refactoring with focused steps, preserved behavior, and documented limits.
 
-## Requirements
+Requirements and limits: Audits are read-only by default. Major architecture changes need a decision. Keep bug fixes and new features distinct from behavior-preserving refactoring.
 
-- Python 3.8+ on PATH (scripts are stdlib-only, no installs).
-- Optional external tools (ast-grep, jscpd, Sonar, OpenRewrite, ts-morph,
-  language linters) are used only when the project already ships them —
-  presence-probed, version-checked. Missing tools → UNVERIFIED entries.
-- Git repo for change-safety features; non-git dirs still audit fine
-  (change surface reported as unknown).
+## ultimate-code-quality-refactoring: Installation and examples
 
-## Install / activate
-
-Repo convention: symlinked by `tools/install-skills.sh` into
-`~/.claude/skills` (Claude Code) + `~/.agents/skills` (Codex); oh-my-pi
-loads both roots — nothing extra per skill. Invoke by name:
-
-```text
-Use the ultimate-code-quality-refactoring skill: audit packages/core for
-complexity hotspots and dead code; PASS/FAIL/UNVERIFIED only, no invented scores.
-Use the ultimate-code-quality-refactoring skill: refactor the pricing module
-without changing behavior — baseline, per-step verify, evidence report.
-```
-
-## Modes & invocation
-
-AUDIT (default, read-only) · QUICK AUDIT · SAFE AUTOFIX · DEEP REFACTOR ·
-ARCHITECTURE REVIEW · DEBT CLEANUP · PRE-MERGE GATE · CONTINUOUS QUALITY.
-Trigger in natural language ("Führe einen vollständigen Code Quality Audit
-durch", "Refaktoriere dieses Modul, ohne Verhalten zu verändern",
-"Behebe sichere Code Smells und teste anschließend") or with the
-`/quality-*` shorthands (`/quality-audit`, `/quality-fix`,
-`/quality-refactor`, `/quality-architecture`, `/quality-debt`,
-`/quality-verify`). Slash-less agents: use the phrases.
-
-## Quick start
+Install from the repository root:
 
 ```bash
-S=skills/ultimate-code-quality-refactoring/scripts
-python3 $S/run_audit.py PATH/TO/PROJECT -o /tmp/qa        # AUDIT bundle
-python3 $S/generate_report.py /tmp/qa/quality-audit.json  # Markdown report
-# fix modes (only after baseline exists):
-python3 $S/verify_changes.py PATH -o /tmp/base.json --save-baseline --cmd "npm test"
-python3 $S/verify_changes.py PATH --baseline /tmp/base.json --cmd "npm test"
+tools/install-skills.sh ultimate-code-quality-refactoring
 ```
 
-## Safety rules (summary)
+Try these prompts in your target project:
 
-User's uncommitted work is never overwritten; no commits/pushes/installs
-without being asked; HIGH-risk changes need approval; revert = own hunks
-only; existing failures stay baseline; absent tools documented, results
-never simulated. Details: `references/safety-and-rollback.md`.
+**Claude Code:**
 
-## Testing workflow & quality gates
+```text
+Use the ultimate-code-quality-refactoring skill. Audit src/ for technical debt. Identify concrete files and prioritize maintenance risks. Do not edit code yet.
+```
 
-Per-step: syntax → lint → typecheck → affected tests → suite → baseline
-compare. Gates: no NEW failures, no unintended API change, no new P0/P1,
-no hidden behavior diff, no measured perf regression. `verify_changes.py`
-exit 0=PASS, 1=FAIL, 2=UNVERIFIED.
+**Codex:**
 
-## Report formats
+```text
+Use the ultimate-code-quality-refactoring skill. Simplify packages/core/pricing.ts without changing behavior. Preserve the public API and run existing tests after each meaningful step.
+```
 
-`assets/audit-report.md`, `assets/refactoring-plan.md`,
-`assets/technical-debt-backlog.md`, `assets/before-after-report.md` —
-rendered by `generate_report.py` / `compare_baseline.py` from measured data.
+**oh-my-pi:**
 
-## Integrations
+```text
+Use the ultimate-code-quality-refactoring skill. Investigate the duplicated parsers. Check their differences first and consolidate only if existing contracts can be preserved.
+```
 
-ultimate-testing-qa (regression runs), ultimate-security-hardening (deep
-security pass on changed areas), accessibility/seo-performance (UI surfaces),
-astro/react-nextjs/defold-development/godot (engine verification). Contract:
-hand over changed-file list + baseline; absent skills change nothing (this
-skill stays standalone).
+## ultimate-code-quality-refactoring: Self-test
 
-## Known limits
+Run from the repository root:
 
-Complexity numbers are labeled proxies without a language compiler; clone
-detection is token-window based (candidates only); behavior proof beyond the
-project's executed checks stays UNVERIFIED; semantic refactoring needs the
-language's own tooling when edits exceed textual safety.
+```bash
+python3 skills/ultimate-code-quality-refactoring/tests/test_skill.py
+```
 
-## Updating for new frameworks/tools
+## Files and further reading
 
-Add rows to `references/language-adapters.md` / `tool-integration.md`
-(presence-gated tables) and, if needed, per-language tables in
-`scripts/collect_metrics.py` (`CODE_EXTS`, `BRANCH_WORDS`). No pinned
-versions anywhere; probe live versions at task time. After edits run
-`python3 tests/test_skill.py`.
+Start with [SKILL.md](SKILL.md) for the binding agent workflow. This README
+contains the usage guide, host examples, and direct tool instructions.
+
+- [references/](references/): Detailed guidance and rules.
+- [assets/](assets/): Support files and templates.
+- [tests/](tests/): Self-tests and fixtures.
+
+These files are present in the skill directory. Check the relevant workflow
+or command help before running a tool directly. Helper modules are not
+standalone CLI entry points.
+
+- [collect_metrics.py](scripts/collect_metrics.py)
+- [compare_baseline.py](scripts/compare_baseline.py)
+- [detect_duplicates.py](scripts/detect_duplicates.py)
+- [detect_project.py](scripts/detect_project.py)
+- [generate_report.py](scripts/generate_report.py)
+- [run_audit.py](scripts/run_audit.py)
+- [verify_changes.py](scripts/verify_changes.py)
+
+## Run tools directly
+
+Run these examples from this skill directory, for example after
+`cd skills/ultimate-code-quality-refactoring` from the repository root. Replace `/path/...` with
+existing paths. Set up required programs before running the commands.
+
+```bash
+python3 scripts/run_audit.py /path/to/project --quick
+```
+
+## Understand the baseline
+
+`run_audit.py` leaves the target project unchanged and writes its audit bundle
+to `/tmp` by default. `--quick` skips duplicate detection; remove the flag for a
+full run. Complexity proxies identify code to investigate, rather than measuring
+runtime performance.

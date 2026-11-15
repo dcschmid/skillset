@@ -1,76 +1,73 @@
-# accessibility — skill guide (human-facing)
+# accessibility
 
-Agent entry point is `SKILL.md`; this file is for people.
+Develop accessible interfaces and audit against WCAG 2.2. Combine automated axe checks with keyboard, focus, and screen reader evidence where the environment supports it.
 
-Universal WCAG 2.2 engineering + auditing skill with a real audit tool.
-WCAG 2.2 A/AA binding · AAA advisory · WCAG-EM 2.0 audits · EN 301 549/BFSG/
-BITV mapping · WCAG2ICT for native. Baseline probe: 2026-11-14.
+Profile: Private and Working. Preparation: Specify routes, components, relevant states, and the target level. Include open dialogs and form error states in scope.
 
-## Layout
+Expected result: Findings and fixes with separate results for automation, manual review, and screen reader testing.
 
-```
-SKILL.md                     agent workflow spine (build/audit/remediate/advise)
-references/                  standards.md wcag-aa.md wcag-aaa.md do-dont.md
-  aria-patterns.md screenreaders.md keyboard-testing.md framework-integration.md
-  native-platforms.md legal-context.md audit-methodology.md
-tooling/a11y-audit/          the tool: src/ (TS, node 22 type-strip) fixtures/ tests/
-  bin/a11y.mjs               launcher — audit|keyboard|report|compare|check
-scripts/setup-check.sh       prerequisite probe (installs nothing)
-scripts/check-standards.mjs  standards drift report
-examples/README.md           patterns quick-ref
-tests/test_skill.py          validation entry (VERDICT parse)
+Requirements and limits: A/AA form the binding baseline; AAA is a separate quality tier. Automated PASS does not establish full conformance. Screen reader automation requires a suitable environment; report missing prerequisites.
+
+## accessibility: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh accessibility
 ```
 
-## Use (Claude Code / Codex / oh-my-pi)
+Try these prompts in your target project:
 
-Install: `tools/install-skills.sh accessibility` — symlinks into
-`~/.claude/skills` (Claude Code) and `~/.agents/skills` (Codex); oh-my-pi
-loads both roots. Invoke by name:
+**Claude Code:**
 
 ```text
-Use the accessibility skill: audit /checkout for WCAG 2.2 AA — automated axe
-gate plus keyboard/focus evidence, and list what needs manual review.
-Use the accessibility skill: build the modal keyboard-first (focus trap, ESC,
-restore focus) and prove it with the SR harness or mark the gap honestly.
+Use the accessibility skill. Audit /checkout for WCAG 2.2 AA. Check form errors, keyboard interaction, and focus. Separate automated findings from manual review items.
 ```
 
-Automated PASS ≠ conformance: reports separate automated gate, manual
-review, and screenreader evidence. Details: `USAGE.md`.
+**Codex:**
 
-## Quick start (in any project)
+```text
+Use the accessibility skill. Fix the existing dialog so it receives sensible initial focus and returns focus when closed. Test Tab, Shift+Tab, and Escape.
+```
+
+**oh-my-pi:**
+
+```text
+Use the accessibility skill. Check save-status announcements with a screen reader if the environment allows it. Record missing evidence instead of reporting a blanket PASS.
+```
+
+## accessibility: Self-test
+
+Run from the repository root:
 
 ```bash
-cd <skill>/tooling/a11y-audit && npm install && npx playwright install chromium firefox
-node bin/a11y.mjs check                                  # capabilities
-node bin/a11y.mjs audit --url http://localhost:3000 --level aa
-node bin/a11y.mjs audit --config a11y.config.json --level aaa --format json,html,junit,sarif
-node bin/a11y.mjs keyboard --url http://localhost:3000
-node bin/a11y.mjs compare --before before.json --after after.json
+python3 skills/accessibility/tests/test_skill.py
 ```
 
-CI: exit 0 = gate pass, 1 = blocking AA violations, 2 = usage error.
-Config `routes[].scenarios` drive dialogs/errors/menus; credentials stay in
-`${A11Y_USER}` env placeholders. Reports: JSON+HTML(self-a11y)+JUnit+SARIF.
+## Files and further reading
 
-## Validation
+Start with [SKILL.md](SKILL.md) for the binding agent workflow. This README
+contains the usage guide, host examples, and direct tool instructions.
+
+- [references/](references/): Detailed guidance and rules.
+- [examples/](examples/): Worked examples.
+- [tests/](tests/): Self-tests and fixtures.
+
+These files are present in the skill directory. Check the relevant workflow
+or command help before running a tool directly. Helper modules are not
+standalone CLI entry points.
+
+- [check-standards.mjs](scripts/check-standards.mjs)
+- [setup-check.sh](scripts/setup-check.sh)
+
+## Run tools directly
+
+Run these examples from this skill directory, for example after
+`cd skills/accessibility` from the repository root. Replace `/path/...` with
+existing paths. Set up required programs before running the commands.
 
 ```bash
-python3 tests/test_skill.py          # full suite, VERDICT PASS/FAIL
-node tooling/a11y-audit/tests/run.mjs
-node tooling/a11y-audit/tests/screenreader-orca.ts   # real Orca where supported
+bash scripts/setup-check.sh
+node tooling/a11y-audit/bin/a11y.mjs check
+node tooling/a11y-audit/bin/a11y.mjs audit --url http://localhost:4321 --level aa
 ```
-
-## Environment truth (Fedora KDE Wayland, 2026-11-14)
-
-Orca 50.3 + AT-SPI2 2.60.7 + Guidepup 0.40 (project-scoped assets). SR
-automation blocked headless (no audio sink for speech capture) — harness
-reports SR_ENV_FAIL + manual fallback, never fabricates. Keyboard/DOM/axe
-lanes run fully. Details: `references/screenreaders.md`.
-
-## Maintenance
-
-- standards drift: `scripts/check-standards.mjs` quarterly; edit only
-  `references/standards.md` pins after review.
-- tool deps: axe-core/Playwright pinned exact; bump deliberately.
-- new framework → add `references/framework-integration.md` section, not a
-  new skill; new SR platform → screenreaders.md matrix.

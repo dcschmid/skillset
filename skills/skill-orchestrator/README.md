@@ -1,102 +1,76 @@
 # skill-orchestrator
 
-Quality and orchestration manager for the skillset repository: discovery,
-catalog, validation, routing plans, overlap truth, 100-point scoring,
-test tiers, regression snapshots, safe repair. Python 3.10+, stdlib only
-(PyYAML optional).
+Inventory actual skills, validate their structure, and investigate overlap. Produce a reasoned skill selection and sequence for a concrete task.
 
-## Install / invoke
+Profile: Private and Working. Preparation: Provide the collection or skill and the requested check. For routing, describe the task and its requirements.
 
-No install required. From the repository root:
+Expected result: A reproducible report, routing plan, or repair proposal with explicit verification limits.
+
+Requirements and limits: Read-only by default. Repairs remain proposals until approved. Agent evaluations that were not run remain UNAVAILABLE; test files do not count as executed tests.
+
+## skill-orchestrator: Installation and examples
+
+Install from the repository root:
 
 ```bash
-skills/skill-orchestrator/scripts/skill-orchestrator doctor
+tools/install-skills.sh skill-orchestrator
 ```
 
-Or put `skills/skill-orchestrator/scripts` on PATH and call
-`skill-orchestrator …`. `pip install skills/skill-orchestrator` works too
-(provides the console script). Repo root auto-detects from CWD;
-`SKILL_ORCHESTRATOR_ROOT` overrides; `--root PATH` per call.
-Global flags (`--json --verbose --profile --output`) go before OR after
-the subcommand.
+Try these prompts in your target project:
 
-## Commands
+**Claude Code:**
 
-| Command | Does | Exit |
-|---|---|---|
-| `scan` | discover skills → `skill-catalog.json` (`--output` dir) | 0 |
-| `audit --all \| --skill X \| --changed [--save] [--report]` | validate + score + blockers | 1 on findings |
-| `overlap [--skill X]` | classified overlaps with file evidence | 1 on conflict |
-| `route "<task>" [--skill X]` | auditable routing plan, read-only | 0 |
-| `plan "<task>"` | same as route (orchestration framing) | 0 |
-| `test --all` | static/routing/conflict/integration tiers | 1 on FAIL |
-| `eval --skill X [--prompt P] [--expect E]` | behavior eval via installed agent CLI | 1 on FAIL |
-| `fix [--skill X] [--apply]` | repair proposals / minimal apply | 0/1 |
-| `report` | Markdown + JSON report of current audit | 0 |
-| `doctor` | environment health (python, yaml, agents, git) | 0 |
-
-Reports/canvas: `--output DIR` or default `<repo>/.artifacts/skill-orchestrator/`.
-
-## Claude Code / Codex
-
-Both hosts read `SKILL.md` here directly (symlinked by the repo installer).
-Invocation from a host session:
-
-> Use skill-orchestrator to audit the collection and list P0 issues.
-
-Or run the CLI yourself and paste the report. Codex additionally gets
-`agents/openai.yaml`. No global agent configs are touched.
-
-## Workflows
-
-**Add a new skill:** create `skills/<name>/SKILL.md` — discovery finds it,
-zero registration. Then `scan && audit --skill <name>`.
-
-**Audit everything:** `audit --all --report` → `.artifacts/…/audit-report.md`
-with scores, blockers, overlaps, P0–P3 task list, regressions vs last
-snapshot (`--save` to store a baseline).
-
-**Compare two skills:** `overlap --skill a --skill b`.
-
-**Repair a skill:** `fix --skill X` (read-only diff) → review →
-`fix --skill X --apply` → re-audit. Applied fixes preserve pre-edit backups, including uncommitted work.
-Use `fixer.rollback(result)` in reverse application order; changed outputs
-are left untouched for manual reconciliation.
-
-**Routing plan:** `route "Erstelle eine barrierefreie Astro-Website"` →
-selection + reasons + order + gates + rejected-with-reasons.
-
-## Layout
-
-```
-SKILL.md                     router (this file links out)
-README.md                    this doc
-agents/openai.yaml           Codex host metadata
-references/validation.md     rule tables, tiers, profiles
-references/routing.md        scoring, exclusions, integration limits
-references/quality-scoring.md weights, grades, blockers
-references/orchestration.md  graph sources, example plans, recursion limit
-references/compatibility.md  profiles × hosts field table
-scripts/skill-orchestrator   launcher (no install needed)
-src/skill_orchestrator/      cli discovery catalog validator router overlap
-                             dependencies scoring auditor evaluator fixer reporting
-tests/test_orchestrator.py   self-tests: python3 tests/test_orchestrator.py
-pyproject.toml               optional pip install
+```text
+Use the skill-orchestrator skill. Audit this skill collection using the portable profile. Report structural errors, overlaps, and areas you could not evaluate.
 ```
 
-## Truths and limits
+**Codex:**
 
-- Plans, not execution: routing outputs a plan; hosts execute with their
-  own skills. A skill cannot force-load in another agent — trigger
-  descriptions and explicit invocation are the supported surfaces.
-- Unchecked ≠ full marks: scoring credits only verified findings; the
-  rest is listed `unchecked`.
-- No fabricated runs: missing agent CLI → agent-eval `UNAVAILABLE`;
-  missing PyYAML → built-in subset parser, both announced by `doctor`.
-- No CI shipped: the repository has none; `audit --changed --json` plugs
-  into any future pipeline (exit codes: 0 ok, 1 findings, 2 technical).
-- Score ≠ test: numeric grades accompany test tiers, never replace them.
+```text
+Use the skill-orchestrator skill. Which skills fit an accessible Astro website with localization? Explain selection and order without activating the entire collection.
 ```
-This suite also validates collection metadata with the shared validator.
-Static audits award at most 5/15 test points for test structure; test
-execution and behavior remain NOT RUN and earn no points until verified.
+
+**oh-my-pi:**
+
+```text
+Use the skill-orchestrator skill. Check human-writing and documentation-technical-writing for conflicting responsibilities. Propose focused corrections without editing files.
+```
+
+## skill-orchestrator: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/skill-orchestrator/tests/test_orchestrator.py
+```
+
+## Files and further reading
+
+Start with [SKILL.md](SKILL.md) for the binding agent workflow. This README
+contains the usage guide, host examples, and direct tool instructions.
+
+- [references/](references/): Detailed guidance and rules.
+- [tests/](tests/): Self-tests and fixtures.
+
+These files are present in the skill directory. Check the relevant workflow
+or command help before running a tool directly. Helper modules are not
+standalone CLI entry points.
+
+- [skill-orchestrator](scripts/skill-orchestrator)
+
+## Run tools directly
+
+Run these examples from this skill directory, for example after
+`cd skills/skill-orchestrator` from the repository root. Replace `/path/...` with
+existing paths. Set up required programs before running the commands.
+
+```bash
+python3 scripts/skill-orchestrator --help
+python3 scripts/skill-orchestrator scan
+```
+
+## Inventory versus evaluation
+
+The launcher works without package installation and reads the actual collection
+files. Check subcommand help before use. A scan inventories files; executing
+tests and evaluating agent behavior are separate steps.

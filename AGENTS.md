@@ -45,10 +45,10 @@ symlink, never copied, into `~/.claude/skills` (Claude Code) and
   `.installed-manifest`, `name<TAB>target` lines). Both accept skill names to
   install/remove individually; uninstall with no args removes all managed
   links.
-- Detailed per-skill usage lives in `README.md` (the `### \`<skill>\``
-  sections: scope, Claude Code / Codex / oh-my-pi invocation, examples, verify
-  command) — that is canonical. `skills/<name>/USAGE.md` mirrors it into the
-  symlinked folder. Keep both in sync when scripts or entry points change.
+- Detailed per-skill usage lives in `skills/<name>/README.md`: scope,
+  Claude Code / Codex / oh-my-pi invocation, examples, direct tools, and verify
+  commands. Keep the root README skill sections aligned when scripts or entry
+  points change. Do not create separate usage-guide mirrors.
 
 ## Verify before commit
 

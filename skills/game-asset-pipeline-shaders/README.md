@@ -1,67 +1,78 @@
 # game-asset-pipeline-shaders
 
-Technical game-asset pipeline skill: materials, textures, shaders, glTF/GLB
-import-export, asset validation, and asset-side GPU budgeting — engine-agnostic
-with Defold + Godot adapters (adapter contract extends to Unity/Unreal/Bevy/
-custom renderers, WebGL/WebGPU). Baselines probed on this machine: Blender
-5.3.0, Godot 4.7.2 (`ed1daf0b`), Defold 1.14.1; versions always come from the
-project, never from assumption.
+Audit the technical path from authored assets to runtime: materials, textures, shaders, glTF/GLB, and memory budgets. Defold and Godot adapters are included.
 
-Owns the pipeline between asset creation and engine runtime: audits, safe
-repairs, optimization plans, budget reports. Modeling/rigging stays with
-`lowpoly-reference-to-blender`, engine APIs with `defold-development`/`godot`,
-cross-cutting QA with `ultimate-testing-qa`.
+Profile: Private. Preparation: Provide the asset directory, engine, art style, target device, budget, and any protected source files.
 
-## Layout
+Expected result: File and reference findings, separate disk-size and estimated VRAM figures, and a repair or optimization plan.
 
-```
-SKILL.md                     router: modes, workflow, hard rules, truth ladder
-references/                  depth loaded on demand (9 topic files + adapters)
-scripts/                     8 stdlib-first Python tools + Blender in-engine gate
-assets/templates/            asset-pipeline.yaml project-config template
-examples/                    defold-pixelart.yaml, godot-pbr.yaml
-tests/                       test_skill.py (exit 0 = PASS) + fixtures
+Requirements and limits: Start repairs with a dry run and back up originals. Preserve appropriate lossless sources and filtering for pixel art. Blender preflight runs inside Blender. Deep glTF specification checks require a suitable validator; other engines are extension points.
+
+## game-asset-pipeline-shaders: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh game-asset-pipeline-shaders
 ```
 
-## Modes
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
 
-`audit · validate · fix · optimize · material · textures · shader · export ·
-benchmark · compare` — declared modes are skill behavior invoked by naming
-the skill; they are not host slash-commands. `fix` is dry-run unless
-`--apply`; originals get `.orig` backups, protected globs are never touched.
+```bash
+tools/install-skills.sh --claude private
+```
 
-## Scripts (all read-only unless noted)
+Try these prompts in your target project:
 
-| Script | Lane | Needs |
-|---|---|---|
-| `asset_audit.py` | whole-project inventory + findings | python3 |
-| `gltf_validate.py` | glTF/GLB structure + refs | python3 |
-| `texture_analyze.py` | kinds/color-space/disk-vs-VRAM | python3 (Pillow richer) |
-| `material_audit.py` | material integrity, style-aware | python3 |
-| `pipeline_runner.py` | mode dispatcher incl. `compare` | python3 (Pillow for compare) |
-| `asset_report.py` | aggregate JSON+MD, CI gate | python3 |
-| `tool_probe.py` | tool presence/version/license | python3 |
-| `blender_preflight.py` | export gate | runs inside Blender |
+**Claude Code:**
 
-## Verify
+```text
+Use the game-asset-pipeline-shaders skill. Audit assets/ in our Godot game for broken references, incorrect color spaces, and oversized textures. Report disk size and estimated VRAM separately. Do not edit files yet.
+```
+
+**Codex:**
+
+```text
+Use the game-asset-pipeline-shaders skill. Plan texture optimization for mobile devices. Preserve pixel-art sources and explain the expected benefit for each file.
+```
+
+**oh-my-pi:**
+
+```text
+Use the game-asset-pipeline-shaders skill. Validate ./assets/vehicle.glb for material and reference errors. Separate static checks from results obtained in an actual engine run.
+```
+
+## game-asset-pipeline-shaders: Self-test
+
+Run from the repository root:
 
 ```bash
 python3 skills/game-asset-pipeline-shaders/tests/test_skill.py
 ```
 
-## Honesty contract
+The modes `audit`, `validate`, `fix`, `optimize`, `material`, `textures`, `shader`, `export`, `benchmark`, and `compare` describe workflows. Local installation targets are recorded in `.installed-manifest`.
 
-`STATIC → HEADLESS → RENDER → MEASURED`; a lane whose engine/tool was absent
-reports `NOT_RUN` with the reason. VRAM math labeled `estimated`; profiler
-numbers labeled by their tool. Estimates never presented as measurements,
-unrun tests never green.
+## Files and further reading
 
-## Known limits
+Start with [SKILL.md](SKILL.md) for the binding agent workflow. This README
+contains the usage guide, host examples, and direct tool instructions.
 
-glTF lane ships container+reference checks plus the installed encode/inspect
-tools (toktx/KTX-Software, gltfpack, gltf-transform, glslangValidator — probe
-with `tool_probe.py`); spec-deep validation still wants the Khronos glTF
-Validator (not installed, named fallback). Engine truth (HEADLESS/RENDER)
-requires the engine invoked per project; the skill scripts cap at STATIC and
-say so. `asset-pipeline.yaml` parses via PyYAML, else the bundled mini-parser
-(subset: scalars/lists/nested maps, no anchors/multi-doc).
+- [references/](references/): Detailed guidance and rules.
+- [assets/](assets/): Support files and templates.
+- [examples/](examples/): Worked examples.
+- [tests/](tests/): Self-tests and fixtures.
+
+These files are present in the skill directory. Check the relevant workflow
+or command help before running a tool directly. Helper modules are not
+standalone CLI entry points.
+
+- [asset_audit.py](scripts/asset_audit.py)
+- [asset_report.py](scripts/asset_report.py)
+- [blender_preflight.py](scripts/blender_preflight.py)
+- [gltf_validate.py](scripts/gltf_validate.py)
+- [material_audit.py](scripts/material_audit.py)
+- [pipeline_lib.py](scripts/pipeline_lib.py)
+- [pipeline_runner.py](scripts/pipeline_runner.py)
+- [texture_analyze.py](scripts/texture_analyze.py)
+- [tool_probe.py](scripts/tool_probe.py)

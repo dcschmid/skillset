@@ -1,224 +1,119 @@
 # game-audio-sound-design
 
-Universal game audio & sound-design skill for the skillset: sound effects,
-music, adaptive music, spatial audio, mixing, audits, safe repairs,
-performance budgets, and release validation — for any genre, art style, or
-engine (Defold + Godot adapters shipped; others adapter-ready). Generation
-runs on **game-audio-forge**; analysis/audit/repair run on ffmpeg.
+Manage sound effects, music, mixing, and audio QA. Generate audio through game-audio-forge; use ffmpeg and ffprobe for analysis and repairs.
 
-## Features
+Profile: Private. Preparation: Provide the game project, audio category, mood, duration, and output format. Use a separate output directory for repairs.
 
-- **audio_doctor.py** — READY / PARTIALLY_READY / NOT_READY readiness report
-  with per-check fix commands (never installs, never downloads)
-- **audio_audit.py** — asset + engine audit (corrupt/silent/clipping/DC/
-  loudness/loop-seam/missing-refs/unreferenced) in three modes:
-  `analyze` (read-only), `fix` (safe ops → NEW files), `optimize` (plan)
-- **audio_process.py / audio_batch.py** — verified ffmpeg ops per file or
-  per set, idempotent, originals untouched, every change re-measured
-- **audio_validate.py** — QA gate per profile (ui-sfx…cinematics) with
-  PASS/WARNING/FAIL/**NOT_TESTED** — untested never reports as passed
-- **audio_manifest.py** — provenance + per-asset license status
-  (ACE-Step MIT approved; Stable Audio weights review_required <$1M/yr;
-  dasheng restricted) with drift re-check before release
-- **engine_defold.py / engine_godot.py** — verified-API emission (1.14.1 /
-  4.7.2): `.sound`, AudioDirector GDScript, facts — nothing invented
-- **gaf_adapter.py** — backend client for `gaf music|sfx|status`; resolves
-  install via `--forge-root > $GAME_AUDIO_FORGE_ROOT > ~/dev/github/game-audio-forge`
+Expected result: A readiness report, measured findings, repaired files, or generated assets with provenance and license status.
 
-## Prerequisites — Required Installation
+Requirements and limits: Generation requires a separately configured game-audio-forge backend. The doctor installs nothing. Defold and Godot adapters are included; Unity and Unreal adapters are not implemented. Creative quality remains AUDIO_REVIEW_REQUIRED; unmeasured checks remain NOT_TESTED. Recheck licensing before release.
 
-**game-audio-forge is a mandatory external dependency and must be installed
-and set up BEFORE this skill can generate audio.** The skill does NOT
-install it automatically, and it never pretends the backend is available.
-The two live in separate repositories: this skill is the control/QA layer,
-game-audio-forge (https://github.com/dcschmid/game-audio-forge) is the
-generation backend. Analysis, audit, and repair work with ffmpeg/ffprobe
-alone — but say so honestly when generation is unavailable.
+## game-audio-sound-design: Installation and examples
 
-Setup order is binding:
-
-```
-1. clone game-audio-forge   2. bash scripts/setup.sh (its docs/SETUP.md)
-3. models+binaries via its setup   4. gaf-test.sh 7/7
-5. install this skill (installer)  6. audio_doctor.py READY
-7. use the skill
-```
-
-## Game Audio Forge installation
+Install from the repository root:
 
 ```bash
-mkdir -p ~/dev/github
-git clone https://github.com/dcschmid/game-audio-forge ~/dev/github/game-audio-forge
-cd ~/dev/github/game-audio-forge
-bash scripts/setup.sh        # idempotent, no sudo; CUDA 12.8 user-space, gcc13
-source scripts/gaf-env       # every new shell
+tools/install-skills.sh game-audio-sound-design
 ```
 
-Backend install/setup truth (host: Fedora, RTX 5070 8 GB):
-`~/dev/github/game-audio-forge/docs/SETUP.md` (build), `docs/LICENSES.md`
-(licensing), `docs/PROMPTING.md` (prompt behaviour). Generation = ACE-Step
-1.5 music 48 kHz + Stable Audio 3 SFX 44.1 kHz on CUDA; sequential by
-design (VRAM budget). Host needs NVIDIA driver, cmake, ninja, jq, jq,
-ffmpeg (analysis-only work needs only ffmpeg/ffprobe + Python ≥3.12).
-
-## Installation verification
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
 
 ```bash
-cd ~/dev/github/skillset/skills/game-audio-sound-design
-python3 scripts/audio_doctor.py --project .      # human report + exit code
-python3 tests/test_skill.py                      # 40+ checks, no GPU needed
+tools/install-skills.sh --claude private
 ```
 
-Doctor checks: forge dir/config/CLI · generator binaries+models ·
-ffmpeg/ffprobe · Python host (3.14: audioop removed — metering is ffmpeg
-by design) · writable output · engine detection. States stay separate:
-*installed ≠ configured ≠ operational*; skill installed ≠ skill operational.
+Try these prompts in your target project:
 
-### Custom backend location
+**Claude Code:**
 
-`--forge-root PATH` (per call) > `export GAME_AUDIO_FORGE_ROOT=…` >
-`~/dev/github/game-audio-forge`. Doctor prints which source answered.
+```text
+Use the game-audio-sound-design skill. Check the audio environment, then audit assets/audio for silence, clipping, and loop seams. List missing tools and write repairs only to audio-fixes/.
+```
 
-### Backend missing?
+**Codex:**
 
-Doctor and tests still work; they name the repo, print
-`git clone https://github.com/dcschmid/game-audio-forge ~/dev/github/game-audio-forge`,
-the setup commands, and keep generation marked unavailable. Never an
-auto-install, never a fake success.
+```text
+Use the game-audio-sound-design skill. Generate a 45-second boss-fight loop through game-audio-forge with a mechanical, tense mood. Check measured tempo, loop seam, and provenance; leave listening review explicitly pending.
+```
 
-## Skill installation
+**oh-my-pi:**
+
+```text
+Use the game-audio-sound-design skill. Plan adaptive exploration, combat, and pause music for this Godot project. Verify scene changes and restart behavior against the installed engine version.
+```
+
+## game-audio-sound-design: Self-test
+
+Run from the repository root:
 
 ```bash
-cd ~/dev/github/skillset
-tools/install-skills.sh game-audio-sound-design    # symlink into Claude Code + Codex
-tools/uninstall-skills.sh game-audio-sound-design  # manifest-tracked removal
+python3 skills/game-audio-sound-design/tests/test_skill.py
 ```
 
-## Configuration
+Prerequisites: configure game-audio-forge before generating audio. Installing this skill alone does not make generation available.
 
-Copy `templates/audio-config.json` (resolution, profiles, formats),
-`templates/audio-budget.json` (voices/memory/rates — illustrative defaults,
-per-project tuning mandatory), `templates/audio-manifest.json` (schema).
-`--budget FILE` feeds audit/validate; loudness bands are guidance, never
-universal laws.
+## Files and further reading
 
-## Usage
+Start with [SKILL.md](SKILL.md) for the binding agent workflow. This README
+contains the usage guide, host examples, and direct tool instructions.
 
-Name the skill by directory name in any agent host, or run the tools:
+- [references/](references/): Detailed guidance and rules.
+- [templates/](templates/): Templates for the target project.
+- [tests/](tests/): Self-tests and fixtures.
+
+These files are present in the skill directory. Check the relevant workflow
+or command help before running a tool directly. Helper modules are not
+standalone CLI entry points.
+
+- [audio_audit.py](scripts/audio_audit.py)
+- [audio_batch.py](scripts/audio_batch.py)
+- [audio_common.py](scripts/audio_common.py)
+- [audio_doctor.py](scripts/audio_doctor.py)
+- [audio_manifest.py](scripts/audio_manifest.py)
+- [audio_process.py](scripts/audio_process.py)
+- [audio_validate.py](scripts/audio_validate.py)
+- [engine_defold.py](scripts/engine_defold.py)
+- [engine_godot.py](scripts/engine_godot.py)
+- [gaf_adapter.py](scripts/gaf_adapter.py)
+
+## Run tools directly
+
+Run these examples from this skill directory, for example after
+`cd skills/game-audio-sound-design` from the repository root. Replace `/path/...` with
+existing paths. Set up required programs before running the commands.
 
 ```bash
 python3 scripts/audio_doctor.py --project /path/to/game
-python3 scripts/audio_audit.py /path/to/game --json            # analyze
-python3 scripts/audio_audit.py /path/to/game --mode fix --apply --out-dir out/
-python3 scripts/audio_validate.py out/ --profile music --json
-python3 scripts/audio_manifest.py create /path/to/game --out manifest.json
-python3 scripts/audio_batch.py convert assets --to ogg --out-dir out/
-python3 scripts/engine_defold.py /path/to/game --facts
-python3 scripts/engine_godot.py /path/to/game --facts
-```
-
-Generation via the backend (the skill never re-implements it):
-
-```bash
+python3 scripts/audio_audit.py /path/to/game --json
 python3 scripts/gaf_adapter.py status
-# or directly: ~/dev/github/game-audio-forge/scripts/gaf music "…" --duration 45
 ```
-
-## Sound Design
-
-Category map, 12-step loop, variation (round-robin + gain ±2 dB / atempo
-±3 % — never for info-bearing pitch), processing table:
-`references/sound-design.md`. Gate = validate + listening
-(AUDIO_REVIEW_REQUIRED, separate state).
-
-## Music Production
-
-`gaf music` with 5-layer paragraph prompts (tags → tempo roulette);
-`--bpm` does not move the DiT (measured) — trust measured BPM
-(backend `gaf-quality.py`), normalize grids with `atempo`. Stems are NOT
-independently generated files; layers get verified parity checks.
-`references/music-production.md`.
-
-## Adaptive Music
-
-State machine + transitions (instant/crossfade/bar-locked) on engine-verified
-playback facts; pause/scene-change/restart contract; fallback ladder.
-`references/adaptive-music.md`.
-
-## Spatial Audio
-
-Computed panning/falloff fallbacks (Defold no listener API at 1.14.1; Godot
-one listener per viewport type); split-screen ladder: shared listener →
-priority culling → per-viewport buses. `references/spatial-audio.md`.
-
-## Audio Audits
-
-`audio_audit.py` findings carry {severity, category, file, problem, cause,
-fix, status}; modes analyze|fix|optimize; reports JSON + human. Broken
-assets, missing refs, unreferenced sets, loop clicks, loudness parity.
-
-## Automatic Fixes
-
-Safe ladder: safe-auto (resample/fade/trim/level → new files) → approved →
-manual → impossible. After every fix: re-measure, before/after, rollback =
-delete generated output. Originals are never modified — by construction.
-
-## Performance Optimization
-
-Budget template + audit enforcement (rate/channels/voices, unreferenced =
-review-list). Runtime cost stays engine-side (documented split).
-`references/performance.md`.
-
-## Engine Integration
-
-Defold 1.14.1 (`sound.play/stop/set_gain/set_pan/set_group_gain…` verified;
-3D listener NOT emitted) · Godot 4.7.2 (players, buses, `AudioServer`
-verified). Unity/Unreal: adapter-ready, honestly unimplemented until APIs +
-test targets exist. `references/engine-integration.md`.
-
-## Licensing
-
-Per-asset `license_status` in manifests: ACE-Step MIT → approved; Stable
-Audio 3 weights → review_required (commercial <$1M/yr tier); dasheng →
-restricted (unlicensed runtime); imported → unknown until reviewed.
-Commercial release blocks on unknown/restricted. `references/licensing.md`.
-
-## Testing
 
 ```bash
-python3 tests/test_skill.py    # static + live-no-GPU, deterministic verdict
+python3 scripts/audio_audit.py /path/to/game --mode fix --apply --out-dir audio-fixes/
+python3 scripts/audio_validate.py audio-fixes/ --profile music --json
+python3 scripts/audio_manifest.py create /path/to/game --out audio-manifest.json
+python3 scripts/audio_manifest.py check audio-manifest.json
 ```
 
-GPU generation tests belong to backend `scripts/gaf-test.sh` (7/7, ~70 s).
-Manual listening is a separate mandatory review state.
+## Set up game-audio-forge
 
-## Troubleshooting
+Generation requires the separate game-audio-forge repository. Follow its own
+`docs/SETUP.md`; this skill does not install models or GPU tools. The documented
+default location is `~/dev/github/game-audio-forge`.
 
-| Symptom | Fix |
-|---|---|
-| doctor: game-audio-forge FAIL | clone+setup (commands above), or set `GAME_AUDIO_FORGE_ROOT` |
-| `ace-lm/sa3-generate not found` | backend `bash scripts/setup.sh` |
-| nvcc errors in shells | `source …/game-audio-forge/scripts/gaf-env` |
-| hangs "GPU busy" | a generator runs; gaf queues by design (8 GB VRAM) |
-| validate all-NOT_TESTED | ffmpeg missing → install ffmpeg-full |
-| clipped reports on mastered files | flat_factor>10 = clipped; peak≈0 is normal |
+Backend resolution uses `--forge-root`, then `GAME_AUDIO_FORGE_ROOT`, then the
+default path. After setup, run the doctor and status commands above. Installed,
+configured, and operational are different states; the doctor reports `READY`,
+`PARTIALLY_READY`, or `NOT_READY`.
 
-## Limitations (open until proven — never claimed)
+Analysis and repairs need ffmpeg/ffprobe and the appropriate Python runtime.
+Generation also needs the backend binaries and models. GPU tests belong to the
+backend test suite. The templates provide audio configuration, budgets, and a
+manifest; tune budgets to the actual game.
 
-- Offline LUFS/true-peak streaming: NOT_TESTED (loudnorm single-pass);
-  playback-time metering required
-- Unity/Unreal adapters: not implemented (no verified APIs/test targets)
-- Multi-listener native: neither shipped engine (fallbacks only)
-- ACE-Step stems (lego/extract): base model needed — absent with SFT
-- Voice/TTS: backend has none; import or external TTS behind the same gates
-- Creative quality: always AUDIO_REVIEW_REQUIRED
-
-## Examples
-
-```bash
-# audit a game project, fix safe findings, validate, manifest, license-gate
-python3 scripts/audio_audit.py ~/games/mygame --mode fix --apply --out-dir fixes/
-python3 scripts/audio_validate.py fixes/ --profile music --json
-python3 scripts/audio_manifest.py create ~/games/mygame --out manifest.json
-python3 scripts/audio_manifest.py check manifest.json
-```
+The repair example above writes new files to `audio-fixes/` and preserves the
+originals. Its validation profile is `music`; choose a profile that fits your
+material. Measurements do not replace listening review. Native multiple-listener
+support, Unity/Unreal adapters, and voice/TTS are not promised features of this
+release. See `references/` for music, spatial audio, and licensing details.

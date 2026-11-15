@@ -1,57 +1,83 @@
 # agent-harness-engineering
 
-Design, audit, optimize, secure, benchmark, and repair agent harnesses —
-the machinery around the model: tools, observations, context, recovery,
-coordination, traces. Platform-independent core + deterministic Python CLIs
-(stdlib only, python3 ≥ 3.10; no network, no installs).
+Audit tools, observation formats, context budgets, error handling, loops, and agent coordination. Python tools analyze real configurations and recorded traces.
 
-Related but distinct: **skill-orchestrator** selects and validates *skills*;
-this skill engineers the *runtime of agents*. App-code quality/security stays
-with the code-focused skills; this skill takes the harness.
+Profile: Private and Working. Preparation: Provide the harness directory, tool definitions, and traces or benchmarks for runtime questions.
 
-## Install
+Expected result: An evidence-backed audit, contract validation, or comparison that distinguishes recorded data from live measurements.
+
+Requirements and limits: Unobservable areas remain UNVERIFIED or are skipped with a reason. Label offline benchmarks as offline. Use skill-orchestrator for choosing skills for a product task.
+
+## agent-harness-engineering: Installation and examples
+
+Install from the repository root:
 
 ```bash
-tools/install-skills.sh agent-harness-engineering   # symlink into host roots
-tools/uninstall-skills.sh agent-harness-engineering
+tools/install-skills.sh agent-harness-engineering
 ```
 
-No dependencies beyond the stdlib. Deep docs in `references/` (router table in
-`SKILL.md`), JSON-Schema contracts in `schemas/`, deterministic checks in
-`tests/`.
+Try these prompts in your target project:
 
-## Workflows
+**Claude Code:**
+
+```text
+Use the agent-harness-engineering skill. Audit our agent harness for duplicate tools, swallowed errors, and unbounded retries. Start with an evidence-backed report.
+```
+
+**Codex:**
+
+```text
+Use the agent-harness-engineering skill. Analyze trace.json for repeated identical tool calls. Identify the steps and propose a bounded retry strategy.
+```
+
+**oh-my-pi:**
+
+```text
+Use the agent-harness-engineering skill. Compare stored benchmarks before and after the tool change. Report regressions and label the comparison as offline.
+```
+
+## agent-harness-engineering: Self-test
+
+Run from the repository root:
 
 ```bash
-# audit any project's harness (read-only; score excludes unobservable lanes)
+python3 skills/agent-harness-engineering/tests/test_skill.py
+```
+
+## Files and further reading
+
+Start with [SKILL.md](SKILL.md) for the binding agent workflow. This README
+contains the usage guide, host examples, and direct tool instructions.
+
+- [references/](references/): Detailed guidance and rules.
+- [assets/](assets/): Support files and templates.
+- [examples/](examples/): Worked examples.
+- [tests/](tests/): Self-tests and fixtures.
+
+These files are present in the skill directory. Check the relevant workflow
+or command help before running a tool directly. Helper modules are not
+standalone CLI entry points.
+
+- [analyze_context.py](scripts/analyze_context.py)
+- [analyze_traces.py](scripts/analyze_traces.py)
+- [audit_harness.py](scripts/audit_harness.py)
+- [benchmark_agent.py](scripts/benchmark_agent.py)
+- [compare_benchmarks.py](scripts/compare_benchmarks.py)
+- [detect_loops.py](scripts/detect_loops.py)
+- [generate_report.py](scripts/generate_report.py)
+- [harness_lib.py](scripts/harness_lib.py)
+- [security_scan.py](scripts/security_scan.py)
+- [validate_observations.py](scripts/validate_observations.py)
+- [validate_tools.py](scripts/validate_tools.py)
+
+## Run tools directly
+
+Run these examples from this skill directory, for example after
+`cd skills/agent-harness-engineering` from the repository root. Replace `/path/...` with
+existing paths. Set up required programs before running the commands.
+
+```bash
 python3 scripts/audit_harness.py --project /path/to/project --format markdown
-# fix plan (dry-run, writes nothing) → deterministic JSON fixes only
-python3 scripts/audit_harness.py --project /path/to/project --fix
-python3 scripts/audit_harness.py --project /path/to/project --apply
-# contracts
-python3 scripts/validate_tools.py tools.json
-python3 scripts/validate_observations.py observations.json
-# runtime forensics
-python3 scripts/detect_loops.py trace.json
-python3 scripts/analyze_traces.py trace.json
-python3 scripts/analyze_context.py context-manifest.json
-python3 scripts/security_scan.py /path/to/project
-# evaluation (offline over recorded traces is always labeled as such)
-python3 scripts/benchmark_agent.py bench.json --out after.json
-python3 scripts/compare_benchmarks.py before.json after.json
-python3 scripts/generate_report.py after.json --out report.md
+python3 scripts/validate_tools.py /path/to/tools.json
+python3 scripts/detect_loops.py /path/to/trace.json
 ```
-
-Host invocations: name the skill and the ask — "audit this agent's harness
-with agent-harness-engineering and fix safe findings"; "benchmark the tool
-calls before/after"; Claude Code (`~/.claude/skills/`), Codex
-(`~/.agents/skills/`), omp load the same content. Slash commands only where a
-host verifies them — none are promised here.
-
-## Honest results
-
-Skipped categories never distort the score; missing platform token data ⇒
-labeled estimates; offline benchmarks never claim live measurement; missing
-evidence ⇒ UNVERIFIED. `python3 tests/test_skill.py` (verdict line
-`VERDICT: PASS|FAIL`, exit 0/1) proves the machinery end to end, including
-dry-run safety, injection surface, retry bounds, and regression detection.

@@ -1,59 +1,79 @@
-# design-authenticity — anti-AI-slop design discipline
+# design-authenticity
 
-Human-facing guide. The agent entry point is [`SKILL.md`](SKILL.md); usage
-prompts for hosts live in [`USAGE.md`](USAGE.md).
+Create or review a visual identity based on the product, audience, and use. Assess typography, color, layout, and generic patterns against actual interfaces.
 
-Universal design authenticity for any UI surface (websites, SaaS,
-dashboards, docs, PWAs, game menus/HUDs; audits of existing
-React/Next/Astro projects). Modes CREATE · REVIEW · REFACTOR · GUARD.
-Product-context-first identity, a Design Identity Engine, Anti-AI-Slop
-detection (default gradients, hero+card templates, glass/glow blobs,
-decoration without purpose), a 100-pt visual gate (target ≥ 90), screenshot
-review when a browser exists, WCAG AA as hard floor. Zero external services.
+Profile: Private. Preparation: Provide the product context, audience, existing brand, and surface. Visual reviews require screenshots or browser access.
 
-## Layout
+Expected result: A reasoned design direction, evidence-backed visual review, or revision with before-and-after comparison.
 
-```
-SKILL.md                     mode gate + engines (identity, anti-slop) + gates
-references/                  12 docs: identity, slop catalog, rubric, per-mode depth
-workflows/                   ordered procedures per mode
-scripts/                     validate_config.mjs · screenshot_audit.sh (browser-gated)
-examples/                    identity configs + review samples
-tests/test_skill.py          static validation, exit 0 = PASS
-USAGE.md                     host invocation guide (mirror of repo README section)
+Requirements and limits: WCAG AA is the floor. Scores require visual review; otherwise report VISUAL_REVIEW_REQUIRED. Existing brand and design requirements remain binding.
+
+## design-authenticity: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh design-authenticity
 ```
 
-## Use (Claude Code / Codex / oh-my-pi)
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
 
-Install: `tools/install-skills.sh design-authenticity` — symlinks into
-`~/.claude/skills` (Claude Code) and `~/.agents/skills` (Codex); oh-my-pi
-loads the same roots. Then invoke by name:
+```bash
+tools/install-skills.sh --claude private
+```
+
+Try these prompts in your target project:
+
+**Claude Code:**
 
 ```text
-Use the design-authenticity skill: REVIEW the landing page — score on the
-100-pt gate, flag every generic pattern with file:line, propose product-fit
-replacements.
-Use the design-authenticity skill: CREATE the visual identity for a docs
-product — typography, color, layout rationale — brand-preserving, no templates.
-Use the design-authenticity skill: GUARD — check my next component PR against
-the identity rules before I merge.
+Use the design-authenticity skill. REVIEW the existing home page. Identify generic patterns and justify changes using our product context and existing brand.
 ```
 
-Existing projects get zero-code audits, prioritized audit-and-fix, and
-brand-preserving modernization with before/after regression review.
+**Codex:**
 
-## Tools
-
-```bash
-node scripts/validate_config.mjs <identity-config>   # schema + completeness
-bash scripts/screenshot_audit.sh <url> <out-dir>     # browser-gated shots;
-                                                     # no browser → BROWSER_UNAVAILABLE, exit 3
+```text
+Use the design-authenticity skill. CREATE a visual direction for a research tool. Explain typography, density, and color choices for long reading sessions.
 ```
 
-Scores only ship with visual comparison; otherwise `VISUAL_REVIEW_REQUIRED`.
+**oh-my-pi:**
 
-## Validate
+```text
+Use the design-authenticity skill. Use GUARD mode to check the new component against our identity rules. Compare its screenshot with existing screens.
+```
+
+## design-authenticity: Self-test
+
+Run from the repository root:
 
 ```bash
-python3 tests/test_skill.py
+python3 skills/design-authenticity/tests/test_skill.py
+```
+
+## Files and further reading
+
+Start with [SKILL.md](SKILL.md) for the binding agent workflow. This README
+contains the usage guide, host examples, and direct tool instructions.
+
+- [references/](references/): Detailed guidance and rules.
+- [workflows/](workflows/): Task-specific procedures.
+- [examples/](examples/): Worked examples.
+- [tests/](tests/): Self-tests and fixtures.
+
+These files are present in the skill directory. Check the relevant workflow
+or command help before running a tool directly. Helper modules are not
+standalone CLI entry points.
+
+- [screenshot_audit.sh](scripts/screenshot_audit.sh)
+- [validate_config.mjs](scripts/validate_config.mjs)
+
+## Run tools directly
+
+Run these examples from this skill directory, for example after
+`cd skills/design-authenticity` from the repository root. Replace `/path/...` with
+existing paths. Set up required programs before running the commands.
+
+```bash
+node scripts/validate_config.mjs /path/to/identity-config.yaml
 ```

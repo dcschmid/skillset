@@ -1,62 +1,82 @@
-# lowpoly-reference-to-blender — reference art to game-ready GLB
+# lowpoly-reference-to-blender
 
-Human-facing guide. The agent entry point is [`SKILL.md`](SKILL.md); usage
-prompts for hosts live in [`USAGE.md`](USAGE.md).
+Turn concept art into a stylized low-poly Blender asset, from reference analysis and reconstructed views to mesh validation and GLB export.
 
-Builds stylized low-poly 3D assets in Blender from 2D concept art:
-characters, faces, vehicles, karts, environments, props. Pipeline: analyze
-reference → plan → category build path → multi-view blueprint gate → mesh
-validation → 0–100 quality score → validated GLB export (Defold-ready).
-Requires live Blender MCP or background Blender Python. Conventions: +Z up,
-+Y facing, 1 BU = 1 m (Blender 5.3.0 on this machine).
+Profile: Private. Preparation: Provide the reference image, asset type, polygon budget, and target engine. Extra views help resolve hidden shapes.
 
-## Layout
+Expected result: A model, comparison views, mesh checks, and an export report. Quality scores require visual comparison with the reference.
 
-```
-SKILL.md                     prerequisites + workflow + parameters + Blender 5.3 truths
-references/                  10 docs: analysis, workflow, character/face/environment
-                             modeling, materials-UV, QA, game-engine-export
-scripts/                     detect_blender.py (system Python) · inspect_scene.py ·
-                             render_reference_views.py · validate_mesh.py ·
-                             export_glb.py · verify_export.py (last five run INSIDE Blender)
-assets/                      quality-report-template.md
-tests/test_e2e_pipeline.py   headless end-to-end run, exit 0 = PASS
-USAGE.md                     host invocation guide (mirror of repo README section)
+Requirements and limits: Requires Blender Python through the private Blender MCP or a background process. System Python cannot import bpy here. Use +Z up, +Y forward, +X right; 1 BU = 1 m. Without visual comparison, report VISUAL_REVIEW_REQUIRED. Use dated names when outputs collide.
+
+## lowpoly-reference-to-blender: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh lowpoly-reference-to-blender
 ```
 
-## Use (Claude Code / Codex / oh-my-pi)
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
 
-Install: `tools/install-skills.sh lowpoly-reference-to-blender` — symlinks
-into `~/.claude/skills` (Claude Code) and `~/.agents/skills` (Codex);
-oh-my-pi loads the same roots and keeps Blender MCP live in session. Then
-invoke by name with the reference attached or pathed:
+```bash
+tools/install-skills.sh --claude private
+```
+
+Try these prompts in your target project:
+
+**Claude Code:**
 
 ```text
-Use lowpoly-reference-to-blender to build a high-quality game-ready low-poly
-character from this concept art. asset_type=character, polygon_budget=2500,
-quality_profile=hero.
-Use lowpoly-reference-to-blender on ./ref/hero-front.png — hero profile, keep
-silhouette, GLB out, report the quality score with observations.
+Use the lowpoly-reference-to-blender skill. Build a low-poly Godot character from ./ref/hero-front.png with a 2500-polygon budget. Preserve the silhouette and colors, label reconstructed views, and export a validated GLB.
 ```
 
-Reference art is the design authority: simplify allowed, substitute
-forbidden. Without visual comparison the skill emits
-`VISUAL_REVIEW_REQUIRED` instead of a number. Outputs non-destructive, dated
-suffix on collision.
+**Codex:**
 
-## Run the scripts
-
-```bash
-python3 scripts/detect_blender.py           # where is Blender, which Python
-# inside Blender (MCP exec or `blender -b --python`):
-#   inspect_scene.py → validate_mesh.py → export_glb.py → verify_export.py
+```text
+Use the lowpoly-reference-to-blender skill. Compare ./assets/kart.blend with ./ref/kart.png. Check proportions and materials, describe mismatches, and propose the next modeling corrections.
 ```
 
-`Mesh.is_manifold`, `use_auto_smooth`, `area_tri_loop` are REMOVED in 5.3 —
-the scripts use the verified replacements.
+**oh-my-pi:**
 
-## Validate
+```text
+Use the lowpoly-reference-to-blender skill. Check the existing prop export for Defold. Verify scale, axes, and mesh integrity, and keep new outputs separate.
+```
+
+## lowpoly-reference-to-blender: Self-test
+
+Run from the repository root:
 
 ```bash
-blender -b --python tests/test_e2e_pipeline.py
+blender -b --python skills/lowpoly-reference-to-blender/tests/test_e2e_pipeline.py
+```
+
+## Files and further reading
+
+Start with [SKILL.md](SKILL.md) for the binding agent workflow. This README
+contains the usage guide, host examples, and direct tool instructions.
+
+- [references/](references/): Detailed guidance and rules.
+- [assets/](assets/): Support files and templates.
+- [tests/](tests/): Self-tests and fixtures.
+
+These files are present in the skill directory. Check the relevant workflow
+or command help before running a tool directly. Helper modules are not
+standalone CLI entry points.
+
+- [detect_blender.py](scripts/detect_blender.py)
+- [export_glb.py](scripts/export_glb.py)
+- [inspect_scene.py](scripts/inspect_scene.py)
+- [render_reference_views.py](scripts/render_reference_views.py)
+- [validate_mesh.py](scripts/validate_mesh.py)
+- [verify_export.py](scripts/verify_export.py)
+
+## Run tools directly
+
+Run these examples from this skill directory, for example after
+`cd skills/lowpoly-reference-to-blender` from the repository root. Replace `/path/...` with
+existing paths. Set up required programs before running the commands.
+
+```bash
+python3 scripts/detect_blender.py
 ```

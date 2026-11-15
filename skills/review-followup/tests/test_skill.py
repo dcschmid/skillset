@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """test_skill.py — review-followup validation (repo convention: python3
-runner, parseable VERDICT). Covers: structure, frontmatter, USAGE mirror,
+runner, parseable VERDICT). Covers: structure, frontmatter, README usage guide,
 authorization discipline, no empty files."""
 from pathlib import Path
 
@@ -18,8 +18,8 @@ text = skill_md.read_text(encoding="utf-8")
 fm = text.split("---")[1] if text.startswith("---") else ""
 check("frontmatter name==dir", "name: review-followup" in fm)
 check("frontmatter description", "description:" in fm)
-check("USAGE.md mirrors skill", (skill / "USAGE.md").is_file()
-      and "review-followup" in (skill / "USAGE.md").read_text(encoding="utf-8"))
+check("README.md documents skill", (skill / "README.md").is_file()
+      and "review-followup" in (skill / "README.md").read_text(encoding="utf-8"))
 check("untrusted-review discipline", "untrusted" in text.lower())
 check("forge-neutral", "glab" in text and "gh" in text)
 check("no empty files", all(f.stat().st_size > 100 for f in skill.rglob("*.md")

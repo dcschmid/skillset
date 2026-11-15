@@ -1,49 +1,109 @@
-# astro — universal Astro web-development skill
+# astro
 
-Agent skill (open `SKILL.md` format: Claude Code, Codex, any SKILL.md runner)
-for building ANY Astro web project — portfolio, blog, docs, marketing,
-product, game-site, i18n, SSR portal — with coding agents. Baseline:
-**Astro 7.4.12 stable** (npm `latest`, probe 2026-11-14; 7.0 shipped
-2026-06-22), version-gated and re-probed per task, never a frozen number.
+Develop new and existing Astro sites, including content, routing, islands, server features, and deployment. Start by inspecting the project and installed version.
 
-## What this is / is not
+Profile: Private. Preparation: Provide the project, affected route, and task. Include measurements and target devices for performance work.
 
-- IS: router (`SKILL.md`) + 16 references + 7 workflows + 4 templates +
-  working read-only tooling; rendering/island/security/version decisions with
-  explicit criteria; measurement-backed perf/a11y/SEO claims.
-- IS NOT: a portfolio/blog/one-framework skill. React/Vue/etc., CMSes, hosts,
-  and integrations are opt-in with reasons; Astro itself is not forced onto
-  stacks that fit another framework better.
+Expected result: An implementation that fits the existing Astro project, build results, and clearly identified runtime checks still pending.
 
-## Layout
+Requirements and limits: Reference versions are starting points. Verify APIs against the project. Add integrations, UI frameworks, and hosting dependencies only when the task calls for them.
 
-| Path | Content | Loaded |
-|---|---|---|
-| `SKILL.md` | triggers, workflow spine, routing tables, truth ladder | on trigger |
-| `references/` | 16 deep docs (versions, architecture, rendering, content, islands, styling, seo, perf, a11y, security, testing, i18n, integrations, deployment, upgrades, fundamentals) | per routing table |
-| `workflows/` | 7 playbooks (new → existing → feature → bugfix → audit → migration → release) | per task type |
-| `templates/` | component, layout, collection, ship checklist | per delivery |
-| `scripts/` | `audit_astro_project.mjs` (read-only auditor, node ≥ 18.17) | at audit step |
-| `tests/` | structure + routing validator (python3, stdlib) | CI / before commit |
+## astro: Installation and examples
 
-## Use
-
-Install via repo installer (`tools/install-skills.sh` → symlinks into
-`~/.claude/skills` (Claude Code) + `~/.agents/skills` (Codex); oh-my-pi
-loads both roots). Any Astro task in an agent session triggers it; explicit
-invocation stays deterministic:
-
-```text
-Use the astro skill: this marketing site ships 400 KB of JS on the landing
-page — find the islands that should be static and cut hydration, keep Actions
-working.
-Use the astro skill: migrate Content Collections config to the Content Layer
-without breaking routes; show the diff and the verification command.
-```
-
-References load on demand; `USAGE.md` carries the full host guide.
+Install from the repository root:
 
 ```bash
-python3 tests/test_skill.py                       # skill self-check (STATIC)
-node scripts/audit_astro_project.mjs <project_dir>  # read-only project census
+tools/install-skills.sh astro
 ```
+
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
+
+```bash
+tools/install-skills.sh --claude private
+```
+
+Try these prompts in your target project:
+
+**Claude Code:**
+
+```text
+Use the astro skill. The home page ships too much JavaScript. Inspect islands and remove unnecessary hydration while preserving interactive behavior. Compare delivered JavaScript before and after.
+```
+
+**Codex:**
+
+```text
+Use the astro skill. Add an article page backed by the existing content collection. Reuse layouts and verify invalid slugs and the build.
+```
+
+**oh-my-pi:**
+
+```text
+Use the astro skill. Migrate content configuration for the installed Astro version. Preserve existing URLs and content.
+```
+
+## astro: Self-test
+
+Run from the repository root:
+
+```bash
+python3 skills/astro/tests/test_skill.py
+```
+
+## Files and further reading
+
+Start with [SKILL.md](SKILL.md) for the binding agent workflow. This README
+contains the usage guide, host examples, and direct tool instructions.
+
+- [references/](references/): Detailed guidance and rules.
+- [workflows/](workflows/): Task-specific procedures.
+- [templates/](templates/): Templates for the target project.
+- [tests/](tests/): Self-tests and fixtures.
+
+These files are present in the skill directory. Check the relevant workflow
+or command help before running a tool directly. Helper modules are not
+standalone CLI entry points.
+
+- [audit_astro_project.mjs](scripts/audit_astro_project.mjs)
+
+## Run tools directly
+
+Run these examples from this skill directory, for example after
+`cd skills/astro` from the repository root. Replace `/path/...` with
+existing paths. Set up required programs before running the commands.
+
+```bash
+node scripts/audit_astro_project.mjs /path/to/astro-project
+```
+
+## Reference and example index
+
+- [references/accessibility.md](references/accessibility.md)
+- [references/architecture.md](references/architecture.md)
+- [references/components.md](references/components.md)
+- [references/content-cms.md](references/content-cms.md)
+- [references/deployment.md](references/deployment.md)
+- [references/fundamentals.md](references/fundamentals.md)
+- [references/integrations.md](references/integrations.md)
+- [references/internationalization.md](references/internationalization.md)
+- [references/islands-interactivity.md](references/islands-interactivity.md)
+- [references/performance.md](references/performance.md)
+- [references/rendering-routing.md](references/rendering-routing.md)
+- [references/security.md](references/security.md)
+- [references/seo.md](references/seo.md)
+- [references/testing.md](references/testing.md)
+- [references/ui-ux-styling.md](references/ui-ux-styling.md)
+- [references/upgrades.md](references/upgrades.md)
+- [references/versions.md](references/versions.md)
+- [workflows/bugfix.md](workflows/bugfix.md)
+- [workflows/existing-project.md](workflows/existing-project.md)
+- [workflows/feature-development.md](workflows/feature-development.md)
+- [workflows/migration.md](workflows/migration.md)
+- [workflows/new-project.md](workflows/new-project.md)
+- [workflows/performance-audit.md](workflows/performance-audit.md)
+- [workflows/production-release.md](workflows/production-release.md)
+- [templates/component.md](templates/component.md)
+- [templates/content-collection.md](templates/content-collection.md)
+- [templates/layout.md](templates/layout.md)
+- [templates/project-checklist.md](templates/project-checklist.md)

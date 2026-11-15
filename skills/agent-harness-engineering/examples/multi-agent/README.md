@@ -1,10 +1,15 @@
-# Example: supervisor → workers, and the audit answers for multi-agent.
+# Check supervisor and worker handoffs
 
-`config.json` declares delegation; `audit_harness.py --only multi-agent`
-answers only from observable material — no delegation config ⇒ category
-`skipped` (never a fake zero). Trace shapes below feed `detect_loops.py`.
+`config.json` declares delegation. The auditor evaluates what it can observe
+in configuration or traces. Missing evidence produces a reasoned skip.
 
-Healthy handoff trace (`detect_loops.py` → PASS):
+From the repository root:
+
+```bash
+python3 skills/agent-harness-engineering/scripts/audit_harness.py --project skills/agent-harness-engineering/examples/multi-agent --only multi-agent
+```
+
+A healthy recorded flow can look like this:
 
 ```json
 {"steps": [
@@ -16,7 +21,18 @@ Healthy handoff trace (`detect_loops.py` → PASS):
 ]}
 ```
 
-Pathological: `supervisor<->worker` repeating with identical arguments ⇒
-`delegation loop` finding with the indices, not a shrug. Shared-state rule
-(references/multi-agent.md): one writer per artifact; here `out/a.md` is
-written only by worker_a, validator is read-only.
+Save this to a new JSON file for an exercise and pass its path to
+`scripts/detect_loops.py` from the skill directory. Repeated handoffs with
+identical arguments can indicate a delegation loop; findings should identify
+the affected steps.
+
+Only worker_a writes `out/a.md`; the validator reads it. See
+[multi-agent.md](../../references/multi-agent.md) for the shared-state rules.
+
+```text
+Use agent-harness-engineering. Analyze our recorded flow for repeated
+handoffs and competing writes. Do not start agents.
+```
+
+These are analysis requests usable in all three clients; they do not activate
+delegation. Return to the [skill README](../../README.md).

@@ -1,71 +1,80 @@
 # seo-performance
 
-Universal SEO & web-performance skill for Claude Code / Codex: audits any
-website (framework or CMS, new or existing), fixes safe issues at the root
-cause, proves results with before/after snapshots, and gates regressions in
-CI. The auditor itself is zero-dependency Node (>=18.17) — runs offline,
-without API keys, and never invents numbers.
+Audit technical SEO, metadata, structured data, and web performance. Distinguish delivered HTML from rendered DOM and lab results from field data.
 
-Baseline verified 2026-11-14 · lighthouse 13.6.0 · @lhci/cli 0.16.1 ·
-unlighthouse 0.19.1 · playwright 1.65.1 · node 22 tested (>=18.17 required).
+Profile: Private and Working. Preparation: Provide the URL or project path and affected pages. Use comparable conditions for performance measurements.
 
-## Quickstart
+Expected result: Prioritized findings with evidence, authorized fixes where applicable, and before-and-after checks.
+
+Requirements and limits: Keep measurements separate from estimates. Local lab results do not replace field data. Apply fixes within the skill rules and the scope already authorized.
+
+## seo-performance: Installation and examples
+
+Install from the repository root:
+
 ```bash
-node scripts/seo.mjs audit .                     # audit current project
-node scripts/seo.mjs audit https://example.com   # external, read-only
-node scripts/seo.mjs audit . --source-dist dist  # audit built output
-node scripts/seo.mjs fix . --apply               # safe fixes (git-reviewable)
-node scripts/seo.mjs performance .               # budgets + CWV discipline
-node scripts/seo.mjs schema <target>             # JSON-LD tiers
-node scripts/seo.mjs ci . --init                 # LHCI + GH Action scaffold
-node scripts/seo.mjs tools                       # detected tool versions
-node tests/run.mjs                               # 24 tests, deterministic
+tools/install-skills.sh seo-performance
 ```
 
-## How agents use it
-- **Claude Code**: skill lives in `~/.claude/skills/seo-performance`
-  (symlink). Invoke `/seo-performance audit` or ask "audit my SEO" — the
-  description triggers on SEO/perf intents and never on incidental UI edits.
-- **Codex**: skill in `~/.agents/skills/seo-performance` (symlink). Ask
-  "run the seo-performance skill: audit this project" — subcommands are
-  arguments to the same workflow, no extra slash-commands needed.
-- Both: read `SKILL.md` (router) → `references/*.md` (depth on demand) →
-  execute `scripts/seo.mjs` (the tool). Progressive disclosure keeps
-  context cheap.
+Try these prompts in your target project:
 
-## Install / update
-`bash setup.sh` — idempotent symlinks into `~/.claude/skills` and
-`~/.agents/skills`, never overwriting foreign dirs. Global = symlink;
-per-project = symlink into `<project>/.claude/skills/`. After central edits
-all consumers update at once (one source: this directory).
+**Claude Code:**
 
-## Layout
-```
-SKILL.md            router: workflows, gates, commands
-references/         12 docs: google rules, technical, CWV, perf, schema,
-                    content, ai-search, astro, nextjs, react, methodology,
-                    remediation
-scripts/seo.mjs     CLI: audit|fix|performance|technical|content|schema|
-                    monitor|ci|compare|serve|tools
-scripts/lib/        html, crawler, detectors, schema, perf, project, report,
-                    config, fix  (stdlib only)
-config/             default | strict | performance-budgets (project-tunable)
-templates/          audit-report, remediation-plan, lighthouse-ci, GH action
-tests/              fixtures + 24 unit/integration tests (run.mjs)
-examples/           minimal SEO component snippets per framework
+```text
+Use the seo-performance skill. Audit the published site for canonicals, robots.txt, sitemap, and structured data. Identify the specific URLs affected.
 ```
 
-## What works today vs optional
-Working offline: crawl, robots/sitemap, canonical/collision, hreflang
-group+reciprocity, metadata/headings, schema 3-tier + content cross-check,
-budgets, snapshots, compare(noise/regression), safe fixes (static
-meta/lang/alt, robots.txt), CI gate, serve, monitor scaffold.
-Optional/enhancing (graceful UNAVAILABLE without them): Lighthouse/Unlighthouse/
-LHCI/Playwright (probe via `tools`; used when installed), PSI/CrUX/GSC
-(network + user access), rich-result award + Google-index status (never
-claimable offline — always reported as UNAVAILABLE).
-Integration seam: `human-writing`/`accessibility`/`astro`/`react-nextjs`
-skills if installed; otherwise self-contained.
+**Codex:**
 
-## Verify any change
-`node tests/run.mjs` (expect `VERDICT PASS pass=24 fail=0`).
+```text
+Use the seo-performance skill. The home page has poor LCP. Measure under comparable conditions, find the cause, and verify the effect of a focused fix.
+```
+
+**oh-my-pi:**
+
+```text
+Use the seo-performance skill. Check the rendered output in the existing build directory for missing titles and conflicting metadata. Produce a report first.
+```
+
+## seo-performance: Self-test
+
+Run from the repository root:
+
+```bash
+node skills/seo-performance/tests/run.mjs
+```
+
+## Files and further reading
+
+Start with [SKILL.md](SKILL.md) for the binding agent workflow. This README
+contains the usage guide, host examples, and direct tool instructions.
+
+- [references/](references/): Detailed guidance and rules.
+- [templates/](templates/): Templates for the target project.
+- [examples/](examples/): Worked examples.
+- [tests/](tests/): Self-tests and fixtures.
+
+These files are present in the skill directory. Check the relevant workflow
+or command help before running a tool directly. Helper modules are not
+standalone CLI entry points.
+
+- [seo.mjs](scripts/seo.mjs)
+
+## Run tools directly
+
+Run these examples from this skill directory, for example after
+`cd skills/seo-performance` from the repository root. Replace `/path/...` with
+existing paths. Set up required programs before running the commands.
+
+```bash
+node scripts/seo.mjs tools
+node scripts/seo.mjs audit /path/to/project
+node scripts/seo.mjs technical /path/to/project
+```
+
+## Interpret audit evidence
+
+`seo.mjs tools` lists available measurement tools. Pass a real URL instead of
+a directory for a URL audit. Source inspection, built-output checks, and
+measurements on the published site provide different evidence; report the
+context of each result.

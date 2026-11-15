@@ -1,30 +1,76 @@
 # ultimate-testing-qa
 
-Universal Testing & QA skill for coding agents: test architecture for new
-web projects, additive test extension for existing ones, browser/runtime
-audits, E2E (Playwright, 3 engines), unit/integration (Vitest), defect
-fix-retest loops, QA reports, CI lanes. Framework-agnostic (Astro, React,
-Next, Vue/Nuxt, Svelte, Vite, vanilla, static HTML).
+Inspect existing tests, fill meaningful coverage gaps, and reproduce bugs in real browser flows. Follow issues through reproduction, repair, and retesting.
 
-Host invocation — install with `tools/install-skills.sh ultimate-testing-qa`
-(symlinks into `~/.claude/skills` for Claude Code, `~/.agents/skills` for
-Codex; oh-my-pi loads both roots, Firefox-default Playwright), then invoke
-by name:
+Profile: Private and Working. Preparation: Provide the URL or project path, start command, and critical user flow. Describe expected and actual results for bugs.
 
-```text
-Use the ultimate-testing-qa skill: equip this SvelteKit app with a test
-architecture — Vitest units, Playwright E2E for checkout, CI gates — extend
-the existing setup, never replace it.
-Use the ultimate-testing-qa skill: reproduce "form submits twice" on
-staging, fix the root cause in source, retest, report what stayed untested.
+Expected result: A reproducible finding, an in-scope fix where applicable, relevant tests, and a record of checked and untested paths.
+
+Requirements and limits: Existing runners and configuration take precedence. Playwright defaults to Firefox unless the project requires another browser. Automated checks do not establish overall product quality.
+
+## ultimate-testing-qa: Installation and examples
+
+Install from the repository root:
+
+```bash
+tools/install-skills.sh ultimate-testing-qa
 ```
 
-- Entry: `SKILL.md` (mode gate A–F + shared analyzer step)
-- Depth: `references/` (standards pins, analysis matrix, architecture,
-  playwright-e2e, vitest-unit, fix-retest, reporting, ci-integration)
-- Tool: `scripts/qa.mjs analyze|report` (Node stdlib, zero deps, offline)
-- Templates: `assets/` (report md skeleton, GitHub Actions QA lane)
-- Validate: `node tests/run.mjs` → `VERDICT PASS/FAIL`
+Try these prompts in your target project:
 
-Baselines pinned 2026-11-14 (Playwright 1.65.1, Vitest 5.1.0, axe 4.14.0) —
-re-probed against each project's lockfile at task time.
+**Claude Code:**
+
+```text
+Use the ultimate-testing-qa skill. Double-clicking the form creates two orders. Reproduce the flow, fix the cause, and verify protection against duplicate submission.
+```
+
+**Codex:**
+
+```text
+Use the ultimate-testing-qa skill. Review existing login and checkout tests. Add the most important missing error paths within the current test setup.
+```
+
+**oh-my-pi:**
+
+```text
+Use the ultimate-testing-qa skill. Inspect the running site for console errors and failed requests. Test navigation and forms at narrow and wide viewports.
+```
+
+## ultimate-testing-qa: Self-test
+
+Run from the repository root:
+
+```bash
+node skills/ultimate-testing-qa/tests/run.mjs
+```
+
+## Files and further reading
+
+Start with [SKILL.md](SKILL.md) for the binding agent workflow. This README
+contains the usage guide, host examples, and direct tool instructions.
+
+- [references/](references/): Detailed guidance and rules.
+- [assets/](assets/): Support files and templates.
+- [tests/](tests/): Self-tests and fixtures.
+
+These files are present in the skill directory. Check the relevant workflow
+or command help before running a tool directly. Helper modules are not
+standalone CLI entry points.
+
+- [qa.mjs](scripts/qa.mjs)
+
+## Run tools directly
+
+Run these examples from this skill directory, for example after
+`cd skills/ultimate-testing-qa` from the repository root. Replace `/path/...` with
+existing paths. Set up required programs before running the commands.
+
+```bash
+node scripts/qa.mjs analyze /path/to/project --format md
+```
+
+## What the analyzer verifies
+
+`qa.mjs analyze` inventories frameworks, runners, routes, and CI configuration.
+It does not execute the target project's tests. Follow the inventory with the
+project's own test commands and report which flows were actually exercised.

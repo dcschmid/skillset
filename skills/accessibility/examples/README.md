@@ -1,76 +1,72 @@
-# Examples
+# Accessible UI patterns
 
-Runnable in-repo: `tooling/a11y-audit/fixtures/` (clean/broken/dialog) are the
-live examples validated by `tests/run.mjs`.
+These examples explain individual building blocks. Runnable fixtures live in
+`../tooling/a11y-audit/fixtures/`, including clean, intentionally broken, and
+dialog examples. Tests in `../tooling/a11y-audit/tests/` use these files.
 
-## Accessible button (framework-neutral truth)
+## Native buttons
+
+A real `button` supplies its role and keyboard interaction. Its text provides
+the accessible name. Use `disabled` only when the action is unavailable.
 
 ```html
-<!-- ✅ name from content, keyboard, focus, disabled state: all native -->
-<button type="submit" disabled>Save</button>
-```
-```tsx
-// ✅ React/Next/Astro island: same element, props typed
-export function Button({ label, ...rest }: React.ComponentProps<'button'>) {
-  return <button {...rest} className="btn focus-visible:outline-3">{label}</button>;
-}
-```
-```astro
-<!-- ❌ Astro: div-as-button: no SR role, no keyboard — delete on sight -->
-<div class="btn" on:click={save}>Save</div>
+<button type="submit">Save</button>
 ```
 
-## Labelled input with help + error (3.3.1/3.3.2)
+A clickable `div` needs additional semantics and keyboard handling. Use the
+native element for this action and provide visible focus styling.
+
+## Inputs with help and errors
+
+The label names the field. `aria-describedby` connects it to help and error
+text. Set `aria-invalid="true"` only when the field is actually invalid.
 
 ```html
 <label for="email">Email address</label>
 <input id="email" name="email" type="email" autocomplete="email" required
-       aria-describedby="email-help" aria-invalid="true">
-<p id="email-help">Used for order updates only.</p>
-<p id="email-error" role="alert">Missing domain — try name@example.com</p>
+       aria-describedby="email-help email-error" aria-invalid="true">
+<p id="email-help">We use this address for order updates.</p>
+<p id="email-error" role="alert">Enter a complete email address.</p>
 ```
-input → `aria-describedby="email-help email-error"`, `aria-invalid` set from
-validation state; server error map rendered, not injected.
 
-## Dialog lifecycle (2.4.3 + focus return)
+After correction, clear the invalid state and remove the obsolete error
+message. Include server-side validation failures in the checks.
+
+## Dialogs and focus
 
 ```html
-<button id="open">Edit</button>
-<dialog aria-labelledby="t">
-  <h2 id="t">Edit record</h2>
-  <!-- focus first field on open; Tab cycles here; Esc closes (native);
-       focus returns to #open -->
+<button id="open" type="button">Edit record</button>
+<dialog aria-labelledby="dialog-title">
+  <h2 id="dialog-title">Edit record</h2>
+  <button type="button">Close</button>
 </dialog>
 ```
-`showModal()` handles trap+Escape. Return focus in the close handler for
-custom flows. See `tooling/a11y-audit/fixtures/dialog.html` + scenario config
-that audits this state open.
 
-## Dynamic status (4.1.3)
+Markup alone does not open the dialog. Connect it to `showModal()` and a close
+action in the project. Check initial focus, Tab and Shift+Tab, Escape, and focus
+return to the trigger. Custom flows need explicit focus-return handling. A
+working fixture is in `../tooling/a11y-audit/fixtures/dialog.html`.
+
+## Announce status changes
+
+Mount the status region before saving and update its content when the result
+is available:
 
 ```html
-<p role="status" aria-live="polite">{saving ? 'Saving…' : saved ? 'Saved' : ''}</p>
-```
-mounted early, polite for routine, `role=alert` only for interruptions.
-
-## CI gate (CI/CD snippet)
-
-```yaml
-- run: node path/to/skill/tooling/a11y-audit/bin/a11y.mjs audit \
-    --config a11y.config.json --level aa --out a11y-report \
-    --format json,html,junit --viewport both
-# exit 1 blocks release on confirmed AA violations; AAA advisory separate
+<p role="status" aria-live="polite"></p>
 ```
 
-## Component keyboard test (Vitest+Playwright or Playwright CT)
+For example, set its content to “Saved”. Reserve `role="alert"` for messages
+that justify an interruption, rather than ordinary progress updates.
 
-```ts
-test('dialog traps and restores', async ({ page }) => {
-  await page.getByRole('button', { name: 'Edit' }).click();
-  await expect(page.getByRole('dialog')).toBeVisible();
-  for (let i = 0; i < 12; i++) await page.keyboard.press('Tab');
-  await expect(page.getByRole('dialog')).toBeVisible();       // no trap leak
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('button', { name: 'Edit' })).toBeFocused(); // return
-});
+## Request a concrete check
+
+```text
+Use accessibility. Check our editing dialog while it is open. Test initial
+focus, Tab, Shift+Tab, Escape, and focus return. Then check form validation
+errors. Separate automated results, manual checks, and screen reader evidence.
 ```
+
+Use this prompt in Claude Code, Codex, or oh-my-pi with the skill and required
+tools installed. Automated checks alone do not establish WCAG conformance.
+The [skill README](../README.md) covers setup and direct tool usage.

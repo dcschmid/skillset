@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """test_skill.py — semgrep-security validation (repo convention: python3
-runner, parseable VERDICT). Covers: structure, frontmatter, USAGE mirror,
+runner, parseable VERDICT). Covers: structure, frontmatter, README usage guide,
 evidence discipline, no empty files."""
 from pathlib import Path
 
@@ -18,8 +18,8 @@ text = skill_md.read_text(encoding="utf-8")
 fm = text.split("---")[1] if text.startswith("---") else ""
 check("frontmatter name==dir", "name: semgrep-security" in fm)
 check("frontmatter description", "description:" in fm)
-check("USAGE.md mirrors skill", (skill / "USAGE.md").is_file()
-      and "semgrep-security" in (skill / "USAGE.md").read_text(encoding="utf-8"))
+check("README.md documents skill", (skill / "README.md").is_file()
+      and "semgrep-security" in (skill / "README.md").read_text(encoding="utf-8"))
 check("findings-as-evidence discipline", "evidence" in text.lower()
       and "false positives" in text.lower())
 check("repo-config precedence", "Repository" in text or "repository" in text)

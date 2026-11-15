@@ -46,7 +46,7 @@ def run(script, *args, expect=None):
 
 
 # ---------- 1 structure & frontmatter ----------
-for p in ("SKILL.md", "README.md", "USAGE.md", "references", "scripts", "schemas", "examples", "tests"):
+for p in ("SKILL.md", "README.md", "references", "scripts", "schemas", "examples", "tests"):
     check(f"exists {p}", (ROOT / p).exists())
 text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
 m = re.match(r"^---\n(.*?)\n---\n", text, re.S)

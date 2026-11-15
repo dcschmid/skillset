@@ -140,13 +140,12 @@ check("adapter.godot_version_gated", "4.7" in god and "ed1daf0b" in god)
 check("adapter.defold_version_gated", "1.14.1" in defd and "ee283d4" in defd)
 check("adapter.docs_beat_files", "beat" in god.lower() or "docs" in god.lower())
 
-# 10. README/USAGE/README-canonical sync
+# 10. consolidated README usage contract
 readme = (ROOT / "README.md").read_text()
-usage_f = (ROOT / "USAGE.md").read_text()
-check("docs.usage_mentions_modes", "audit" in usage_f and "compare" in usage_f)
-check("docs.verify_cmd_runs", "test_skill.py" in readme and "test_skill.py" in usage_f)
+check("docs.readme_mentions_modes", "audit" in readme and "compare" in readme)
+check("docs.verify_cmd_runs", "test_skill.py" in readme)
 for f in ("install-skills.sh game-asset-pipeline-shaders", ".installed-manifest"):
-    check(f"docs.sync[{f}]", f in usage_f)
+    check(f"docs.readme[{f}]", f in readme)
 
 # 11. tool_probe degrades honestly on missing tools
 r = run("tool_probe.py")

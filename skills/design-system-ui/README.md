@@ -1,44 +1,80 @@
 # design-system-ui
 
-Design-system and UI-component engineering for any web project (plus
-game-UI token concepts for Godot/Defold). CREATE token systems, AUDIT
-existing projects, FIX inconsistencies, MIGRATE toward a system, VALIDATE
-tokens/themes, DOCUMENT components — the system serves the project's
-identity, it never replaces it.
+Create and audit design tokens, themes, and reusable components. Find duplicate colors, inconsistent spacing, and components that bypass the existing system.
 
-Entry point: [`SKILL.md`](SKILL.md) (workflow spine + mode gate).
+Profile: Private. Preparation: Provide the project, token sources, themes, and affected components. Specify audit versus implementation.
 
-## Use (Claude Code & Codex — same trigger, no slash registry)
+Expected result: File-and-line findings, validated tokens, or an incremental migration with documented component contracts.
 
-```
-Use design-system-ui to audit this project's design consistency.
-Use design-system-ui to create a token system for this new app.
-Use design-system-ui to fix the duplicate buttons and broken dark mode.
-```
+Requirements and limits: The system follows the project visual identity. The Node tool needs no extra packages. Figma requirements remain binding when Figma is the design source.
 
-`/design-system audit|fix|tokens|component|themes|migrate|docs|validate|report|init`
-≡ run the skill in that workflow (table in SKILL.md). Triggers: design
-system/tokens, UI consistency, component library, dark mode broken,
-duplicate components, token refactor.
+## design-system-ui: Installation and examples
 
-## Tooling (zero deps, node ≥18)
+Install from the repository root:
 
 ```bash
-node scripts/ds.mjs detect <dir>                      # stack facts
-node scripts/ds.mjs tokens t.json --themes light,dark # validate; exit 1 on P0
-node scripts/ds.mjs audit <dir> --format md           # P0..P3, file:line
-node scripts/ds.mjs report f.json --format html       # non-destructive
-node assets/ds-tokens-build.mjs t.json --out build --themes light,dark  # CSS/TS emit
+tools/install-skills.sh design-system-ui
 ```
 
-## Layout
+For Claude Code, also synchronize its shared skill directory with this profile.
+This command synchronizes the full profile, rather than just this skill:
 
-- `references/` — tokens(DTCG v2025.10)/components/theming/audit-rules/
-  migration/testing/framework-adapters/accessibility/anti-ai-boundary
-- `assets/` — token build script + source/doc templates
-- `examples/fixture-messy|fixture-clean/` — before/after pair, asserted by tests
-- `tests/run.mjs` — `node tests/run.mjs` → VERDICT line
+```bash
+tools/install-skills.sh --claude private
+```
 
-Cooperates with (degrades gracefully when absent): accessibility,
-design-authenticity, ultimate-testing-qa, react-nextjs, astro,
-ultimate-i18n-localization, ultimate-code-quality-refactoring.
+Try these prompts in your target project:
+
+**Claude Code:**
+
+```text
+Use the design-system-ui skill. Audit src/ for duplicate colors, spacing, and button variants. Report file and line and propose a safe cleanup order.
+```
+
+**Codex:**
+
+```text
+Use the design-system-ui skill. Dark mode is broken in three components. Find token mismatches, fix them, and verify both themes and focus states.
+```
+
+**oh-my-pi:**
+
+```text
+Use the design-system-ui skill. Create a DTCG token model from our existing palette for light and dark themes. Use a build step and document semantic tokens.
+```
+
+## design-system-ui: Self-test
+
+Run from the repository root:
+
+```bash
+node skills/design-system-ui/tests/run.mjs
+```
+
+## Files and further reading
+
+Start with [SKILL.md](SKILL.md) for the binding agent workflow. This README
+contains the usage guide, host examples, and direct tool instructions.
+
+- [references/](references/): Detailed guidance and rules.
+- [assets/](assets/): Support files and templates.
+- [examples/](examples/): Worked examples.
+- [tests/](tests/): Self-tests and fixtures.
+
+These files are present in the skill directory. Check the relevant workflow
+or command help before running a tool directly. Helper modules are not
+standalone CLI entry points.
+
+- [ds.mjs](scripts/ds.mjs)
+
+## Run tools directly
+
+Run these examples from this skill directory, for example after
+`cd skills/design-system-ui` from the repository root. Replace `/path/...` with
+existing paths. Set up required programs before running the commands.
+
+```bash
+node scripts/ds.mjs detect /path/to/project
+node scripts/ds.mjs audit /path/to/project --format md
+node scripts/ds.mjs tokens /path/to/tokens.json --themes light,dark
+```
