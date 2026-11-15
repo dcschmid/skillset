@@ -14,7 +14,9 @@ upgrades. Next.js is never forced.
 tools/install-skills.sh react-nextjs
 ```
 
-Symlinks into both host roots; remove with
+Symlinks into both host roots plus the Working profile roots
+(`~/.omp/profiles/working/agent/skills`, `$STACK/codex-working-home/skills`;
+`tools/profile-map.tsv`); remove with
 `tools/uninstall-skills.sh react-nextjs`.
 
 ## Claude Code

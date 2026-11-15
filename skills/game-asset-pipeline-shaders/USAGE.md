@@ -12,7 +12,9 @@ art-style-aware rules (pixel-art keeps lossless + nearest).
 tools/install-skills.sh game-asset-pipeline-shaders
 ```
 
-Symlinks into both host roots, records in `.installed-manifest`. Remove:
+Symlinks into both host roots plus the Private profile roots
+(`~/.omp/profiles/private/agent/skills`, `~/.codex/skills`;
+`tools/profile-map.tsv`), records in `.installed-manifest`. Remove:
 `tools/uninstall-skills.sh game-asset-pipeline-shaders`.
 
 ## Claude Code

@@ -13,7 +13,9 @@ items are marked, never invented.
 tools/install-skills.sh godot            # from the repo root
 ```
 
-The installer symlinks `skills/godot/` into both host roots and records the
+The installer symlinks `skills/godot/` into both host roots plus the Private
+profile roots (`~/.omp/profiles/private/agent/skills`, `~/.codex/skills`;
+`tools/profile-map.tsv`) and records the
 link in `.installed-manifest`. Remove it again with
 `tools/uninstall-skills.sh godot`.
 

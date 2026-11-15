@@ -13,7 +13,9 @@ claims; unverified items are marked, never invented.
 tools/install-skills.sh defold-development
 ```
 
-Symlinks `skills/defold-development/` into both host roots and records the
+Symlinks `skills/defold-development/` into both host roots plus the Private
+profile roots (`~/.omp/profiles/private/agent/skills`, `~/.codex/skills`;
+`tools/profile-map.tsv`) and records the
 link in `.installed-manifest`. Remove with
 `tools/uninstall-skills.sh defold-development`.
 

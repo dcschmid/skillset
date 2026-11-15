@@ -13,7 +13,10 @@ stacks that fit it better.
 tools/install-skills.sh astro
 ```
 
-Symlinks into both host roots; remove with `tools/uninstall-skills.sh astro`.
+Symlinks EXCLUSIVELY into the Private profile roots
+(`~/.omp/profiles/private/agent/skills`, `~/.codex/skills` —
+`tools/profile-map.tsv`), never the shared roots; remove with
+`tools/uninstall-skills.sh astro`.
 
 ## Claude Code
 

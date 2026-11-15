@@ -18,7 +18,15 @@ MANIFEST="$REPO/.installed-manifest"
 command -v flock >/dev/null || { echo "error: flock is required" >&2; exit 1; }
 exec 9>"$MANIFEST.lock"
 flock -x 9
-DEFAULT_TARGETS=("$HOME/.claude/skills" "$HOME/.agents/skills")
+# Legacy-manifest fallback roots: manifest rows with a target column drive
+# their own removal, but name-only lines (and skills whose scope changed) are
+# resolved against every root install-skills.sh can write to.
+STACK="${MM_STACK_DATA_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/frontend-ai-stack}"
+DEFAULT_TARGETS=(
+  "$HOME/.claude/skills" "$HOME/.agents/skills"
+  "$HOME/.omp/profiles/private/agent/skills" "$HOME/.codex/skills"
+  "$HOME/.omp/profiles/working/agent/skills" "${MM_CODEX_WORKING_HOME:-$STACK/codex-working-home}/skills"
+)
 
 [[ -f "$MANIFEST" ]] || { echo "nothing installed (no manifest)"; exit 0; }
 

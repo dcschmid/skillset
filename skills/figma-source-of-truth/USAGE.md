@@ -11,6 +11,12 @@ Figma — `design-authenticity` and `design-system-ui` stay in charge there.
 tools/install-skills.sh figma-source-of-truth
 ```
 
+Symlinks EXCLUSIVELY into the Working profile roots
+(`~/.omp/profiles/working/agent/skills`, `$STACK/codex-working-home/skills` —
+`tools/profile-map.tsv`), never the shared roots; the stack's own
+`mm-figma-source-of-truth` is a separate skill and stays untouched. Remove
+with `tools/uninstall-skills.sh figma-source-of-truth`.
+
 ## Invoke
 
 ```text

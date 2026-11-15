@@ -13,7 +13,9 @@ machine; conventions +Z up, +Y facing, 1 BU = 1 m).
 tools/install-skills.sh lowpoly-reference-to-blender
 ```
 
-Symlinks into both host roots; remove with
+Symlinks EXCLUSIVELY into the Private profile roots
+(`~/.omp/profiles/private/agent/skills`, `~/.codex/skills` —
+`tools/profile-map.tsv`), never the shared roots; remove with
 `tools/uninstall-skills.sh lowpoly-reference-to-blender`.
 
 ## Claude Code

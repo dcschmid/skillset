@@ -17,7 +17,9 @@ reports `NOT_READY` honestly; it never installs the backend or fakes it.
 tools/install-skills.sh game-audio-sound-design    # repo root
 ```
 
-Symlinks into `~/.claude/skills` + `~/.agents/skills`, tracked in
+Symlinks into `~/.claude/skills` + `~/.agents/skills` plus the Private profile
+roots (`~/.omp/profiles/private/agent/skills`, `~/.codex/skills`;
+`tools/profile-map.tsv`), tracked in
 `.installed-manifest`; remove with `tools/uninstall-skills.sh
 game-audio-sound-design`.
 

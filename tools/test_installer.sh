@@ -10,7 +10,10 @@ TEST_REPO=$(mktemp -d)
 trap 'rm -rf "$TEST_REPO"' EXIT
 mkdir -p "$TEST_REPO/tools" "$TEST_REPO/skills"
 cp "$REPO/tools/install-skills.sh" "$REPO/tools/uninstall-skills.sh" "$TEST_REPO/tools/"
-for name in lowpoly-reference-to-blender human-writing; do
+# Test-local routing map: two fixture skills exercise private/working scope;
+# the fixtures below stay unlisted (scope=both) so shared-root tests hold.
+printf 'priv-skill\tprivate\nwork-skill\tworking\n' > "$TEST_REPO/tools/profile-map.tsv"
+for name in lowpoly-reference-to-blender human-writing priv-skill work-skill; do
   mkdir -p "$TEST_REPO/skills/$name"
   printf '%s\n' 'fixture' > "$TEST_REPO/skills/$name/SKILL.md"
 done
@@ -18,8 +21,14 @@ REPO="$TEST_REPO"
 export HOME="$TEST_HOME"
 CLAUDE="$HOME/.claude/skills"
 CODEX="$HOME/.agents/skills"
+PP="$HOME/.omp/profiles/private/agent/skills"
+PW="$HOME/.omp/profiles/working/agent/skills"
+CX="$HOME/.codex/skills"
+CW="$HOME/.local/share/frontend-ai-stack/codex-working-home/skills"
 SKILL=lowpoly-reference-to-blender
 SECOND=human-writing
+PRIV=priv-skill
+WORK=work-skill
 MANIFEST="$REPO/.installed-manifest"
 FOREIGN=/tmp/foreign-elsewhere-$$
 
@@ -28,7 +37,10 @@ t() { # name, command-string
   if eval "$2"; then echo "PASS $1"; pass=$((pass+1));
   else echo "FAIL $1"; fail=$((fail+1)); fi
 }
-clean() { rm -rf "$HOME/.claude" "$HOME/.agents" "$MANIFEST"; }
+clean() {
+  rm -rf "$HOME/.claude" "$HOME/.agents" "$HOME/.codex" "$HOME/.omp" \
+         "$HOME/.local/share/frontend-ai-stack" "$MANIFEST"
+}
 
 # 1. fresh install links the skill into both agents + writes manifest
 clean
@@ -116,6 +128,57 @@ wait "$pid_second"; second_rc=$?
 t "parallel.mixed_success" "[ $first_rc -eq 0 ] && [ $second_rc -eq 0 ]"
 t "parallel.mixed_manifest" '[ "$(wc -l < "$MANIFEST")" -eq 2 ] && [ ! -L "$CLAUDE/$SKILL" ] && [ -L "$CODEX/$SECOND" ]'
 t "parallel.no_temp_left" '! compgen -G "$MANIFEST.tmp.*" >/dev/null'
+
+# 11. EXCLUSIVE routing: a scoped skill lives only in its own profile roots —
+#     absent from shared roots and from the other profile, so omp profiles and
+#     Codex homes never cross the private/working boundary.
+clean
+bash "$REPO/tools/install-skills.sh" >/dev/null 2>&1
+t "route.private_omp"      '[ -L "$PP/$PRIV" ]'
+t "route.private_codex"    '[ -L "$CX/$PRIV" ]'
+t "route.private_absent_shared" '[ ! -e "$CLAUDE/'"$PRIV"'" ] && [ ! -e "$CODEX/'"$PRIV"'" ]'
+t "route.private_not_working" '[ ! -e "$PW/'"$PRIV"'" ] && [ ! -e "$CW/'"$PRIV"'" ]'
+t "route.working_omp"      '[ -L "$PW/$WORK" ]'
+t "route.working_codex"    '[ -L "$CW/$WORK" ]'
+t "route.working_absent_shared" '[ ! -e "$CLAUDE/'"$WORK"'" ] && [ ! -e "$CODEX/'"$WORK"'" ]'
+t "route.working_not_private" '[ ! -e "$PP/'"$WORK"'" ] && [ ! -e "$CX/'"$WORK"'" ]'
+t "route.both_shared_only" '[ -L "$CLAUDE/$SKILL" ] && [ -L "$CODEX/$SKILL" ] && [ ! -e "$PP/'"$SKILL"'" ] && [ ! -e "$PW/'"$SKILL"'" ]'
+t "route.manifest_scoped"  "awk -F'\\t' -v n='$PRIV' '\$1==n' '$MANIFEST' | grep -q 'omp/profiles/private' && ! awk -F'\\t' -v n='$PRIV' '\$1==n' '$MANIFEST' | grep -q '.claude'"
+
+# 12. scope change prunes the old profile root on reinstall (private -> working).
+clean
+bash "$REPO/tools/install-skills.sh" "$PRIV" >/dev/null 2>&1
+printf 'priv-skill\tworking\nwork-skill\tworking\n' > "$REPO/tools/profile-map.tsv"
+bash "$REPO/tools/install-skills.sh" "$PRIV" >/dev/null 2>&1
+t "rescope.linked_new"     '[ -L "$PW/'"$PRIV"'" ] && [ -L "$CW/'"$PRIV"'" ]'
+t "rescope.pruned_old"     '[ ! -e "$PP/'"$PRIV"'" ] && [ ! -e "$CX/'"$PRIV"'" ]'
+t "rescope.shared_absent"  '[ ! -e "$CLAUDE/'"$PRIV"'" ] && [ ! -e "$CODEX/'"$PRIV"'" ]'
+t "rescope.manifest_clean" "! awk -F'\\t' -v n='$PRIV' '\$1==n' '$MANIFEST' | grep -q 'omp/profiles/private'"
+
+# 13. uninstall clears every root the skill was ever linked into.
+clean
+bash "$REPO/tools/install-skills.sh" >/dev/null 2>&1
+bash "$REPO/tools/uninstall-skills.sh" "$PRIV" >/dev/null 2>&1
+t "uninstall.private_roots" '[ ! -e "$PP/'"$PRIV"'" ] && [ ! -e "$CX/'"$PRIV"'" ]'
+t "uninstall.other_intact"  '[ -L "$PW/'"$WORK"'" ] && [ -L "$CLAUDE/$SKILL" ]'
+
+# 14. launch-sync (--claude <profile>): Claude's shared root is rewritten to the
+#     last-launched profile; durable (omp/Codex) roots stay exclusive.
+clean
+printf 'priv-skill\tprivate\nwork-skill\tworking\n' > "$REPO/tools/profile-map.tsv"
+bash "$REPO/tools/install-skills.sh" >/dev/null 2>&1          # durable base
+bash "$REPO/tools/install-skills.sh" --claude private >/dev/null 2>&1; rc=$?
+t "claude_sync.private_exit" "[ $rc -eq 0 ]"
+t "claude_sync.private_here" '[ -L "$CLAUDE/$PRIV" ]'           # private scoped lands in Claude root
+t "claude_sync.working_gone" '[ ! -e "$CLAUDE/'"$WORK"'" ]'      # working scoped absent
+t "claude_sync.both_stay"    '[ -L "$CLAUDE/$SKILL" ]'           # both always present
+t "claude_sync.durable_intact" '[ -L "$PP/$PRIV" ] && [ -L "$PW/$WORK" ] && [ ! -e "$PW/'"$PRIV"'" ]'
+t "claude_sync.manifest_records" "awk -F'\\t' -v n='$PRIV' -v l='$CLAUDE' '\$1==n && \$2==l' '$MANIFEST' | grep -q ."
+bash "$REPO/tools/install-skills.sh" --claude working >/dev/null 2>&1
+t "claude_sync.relaunch_working" '[ -L "$CLAUDE/$WORK" ] && [ ! -e "$CLAUDE/'"$PRIV"'" ] && [ -L "$CLAUDE/$SKILL" ]'
+t "claude_sync.durable_still_exclusive" '[ -L "$PP/$PRIV" ] && [ ! -e "$PP/'"$WORK"'" ]'
+t "claude_sync.manifest_rewritten" "! awk -F'\\t' -v n='$PRIV' -v l='$CLAUDE' '\$1==n && \$2==l' '$MANIFEST' | grep -q ."
+t "claude_sync.no_names_accepted" 'bash "$REPO/tools/install-skills.sh" --claude private '"$SKILL"' >/dev/null 2>&1; [ $? -ne 0 ] && true'
 
 rm -rf "$FOREIGN"
 echo "== installer tests: $pass pass, $fail fail"

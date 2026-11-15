@@ -893,11 +893,13 @@ execution and behavior remain NOT RUN and earn no points until verified.
 Every skill additionally carries `references/` deep docs (5–27 files each),
 loaded by its SKILL.md routing tables only when the task needs them.
 
-## Install (Claude Code + Codex)
+## Install (Claude Code + Codex, profile-routed)
 
 ```bash
-tools/install-skills.sh                  # symlink ALL skills into ~/.claude/skills and ~/.agents/skills
+tools/install-skills.sh                  # symlink ALL skills, routed by scope
 tools/install-skills.sh godot astro      # symlink ONLY the named skills
+tools/install-skills.sh --claude private # sync Claude's shared root to Private
+tools/install-skills.sh --claude working # sync Claude's shared root to Working
 tools/uninstall-skills.sh                # remove ONLY links this repo created
 tools/uninstall-skills.sh godot          # remove ONLY the named skills
 ```
@@ -909,9 +911,38 @@ before anything is linked. Installed links are recorded in
 uninstaller trusts only that manifest and keeps entries for skills that
 remain installed.
 
-Installer and uninstaller require `flock`, share a repository lock, and
-replace the manifest atomically. Installer tests use a temporary repository
-and leave the live installation manifest untouched.
+### Profile routing
+
+`tools/profile-map.tsv` (`<skill-name><TAB>private|working|both`, unlisted =
+`both`) routes each skill into the roots of the matching agent profile, so the
+Private profile never sees Working-only skills and vice versa. The dev-setup
+stack (`mm-profile-skills-sync`) enforces the same split for its own `mm-*`
+package skills; the roots below mirror its `target_dir` convention.
+
+| Scope | Roots (exclusive — never the other scopes' roots) |
+|---|---|
+| `both` | `~/.claude/skills`, `~/.agents/skills` (shared, every profile sees them) |
+| `private` | `~/.omp/profiles/private/agent/skills`, `~/.codex/skills` |
+| `working` | `~/.omp/profiles/working/agent/skills`, `$STACK/codex-working-home/skills` |
+
+Routing is exclusive, matching the dev-setup `payload/{private,working}` split:
+a scoped skill is absent from the shared roots and from the other profile, so
+omp profiles, private Codex, and working Codex never cross the boundary.
+Claude Code is the exception the stack also makes: it has one shared dir, so
+`install-skills.sh --claude private|working` rewrites `~/.claude/skills` at
+launch time (last profile launched wins) — same semantics as the stack's
+`mm-profile-skills-sync` in the `claude-private`/`claude-working` wrappers;
+durable omp/Codex roots stay untouched. Current routing: game-dev skills
+(`lowpoly-reference-to-blender`, `defold-development`, `godot`,
+`game-asset-pipeline-shaders`, `game-audio-sound-design`), `astro`,
+`design-authenticity`, and `design-system-ui` are `private`; `react-nextjs`
+and `figma-source-of-truth` are `working`; everything else is `both`.
+
+Reinstalling a skill after its scope changed prunes the stale links from the
+no-longer-owned profile roots and rewrites the manifest rows. Installer and
+uninstaller require `flock`, share a repository lock, and replace the manifest
+atomically. Installer tests use a temporary repository and leave the live
+installation manifest untouched.
 
 Verify what is installed: `cat .installed-manifest` (untracked, local state).
 

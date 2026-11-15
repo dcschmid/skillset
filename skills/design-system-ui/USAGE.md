@@ -14,7 +14,9 @@ design-authenticity; E2E/browser QA → ultimate-testing-qa.
 tools/install-skills.sh design-system-ui
 ```
 
-Symlinks into both host roots; remove with
+Symlinks EXCLUSIVELY into the Private profile roots
+(`~/.omp/profiles/private/agent/skills`, `~/.codex/skills` —
+`tools/profile-map.tsv`), never the shared roots; remove with
 `tools/uninstall-skills.sh design-system-ui`.
 
 ## Claude Code

@@ -1,0 +1,14 @@
+# Profile routing consumed by tools/install-skills.sh (and mirrored by docs).
+# Format: <skill-name><TAB><scope>; scope = private | working | both.
+# Unlisted skills default to both. Game dev + Astro are private-machine work,
+# React/Next.js is the Working stack; see README "Profile routing".
+lowpoly-reference-to-blender	private
+defold-development	private
+game-asset-pipeline-shaders	private
+game-audio-sound-design	private
+godot	private
+astro	private
+react-nextjs	working
+figma-source-of-truth	working
+design-authenticity	private
+design-system-ui	private
