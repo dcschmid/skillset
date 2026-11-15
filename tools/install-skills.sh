@@ -100,7 +100,11 @@ prune_skill() { # $1 = name, $2 = target root — drop a managed repo link
   local path="$2/$1" dest
   [[ -L "$path" ]] || return 0
   dest="$(readlink -f "$path")"
-  [[ "$dest" == "$SKILLS_SRC/$1" ]] && { rm "$path"; echo "pruned  $1 <- ${2}"; }
+  if [[ "$dest" == "$SKILLS_SRC/$1" ]]; then
+    rm "$path"
+    echo "pruned  $1 <- ${2}"
+  fi
+  return 0  # foreign links are left alone; absence of work is not failure
 }
 
 all_skills() { local d; for d in "$SKILLS_SRC"/*/; do [[ -f "$d/SKILL.md" ]] && basename "${d%/}"; done; }

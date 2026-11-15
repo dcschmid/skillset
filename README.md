@@ -27,7 +27,7 @@ docs/                       architecture + authoring guides
 
 ## Skills
 
-Twenty skills. The index below is navigation only; each skill then gets
+Twenty-four skills. The index below is navigation only; each skill then gets
 its own detailed section — scope, shipped automation, how to invoke it in
 Claude Code, Codex, and oh-my-pi (omp), copy-paste examples, and its own
 verify command. `skills/<name>/USAGE.md` is the same guide, mirrored into
@@ -51,6 +51,10 @@ README is the canonical copy.
 | [documentation-technical-writing](#documentation-technical-writing) | Engineering | `python3 …/tests/test_skill.py` |
 | [accessibility](#accessibility) | Engineering | `python3 …/tests/test_skill.py` |
 | [seo-performance](#seo-performance) | Engineering | `node …/tests/run.mjs` |
+| [ci-triage](#ci-triage) | Engineering | `python3 …/tests/test_skill.py` |
+| [review-followup](#review-followup) | Engineering | `python3 …/tests/test_skill.py` |
+| [semgrep-security](#semgrep-security) | Engineering | `python3 …/tests/test_skill.py` |
+| [playwright](#playwright) | Engineering | `python3 …/tests/test_skill.py` |
 | [design-authenticity](#design-authenticity) | Design | `python3 …/tests/test_skill.py` |
 | [design-system-ui](#design-system-ui) | Design | `node …/tests/run.mjs` |
 | [figma-source-of-truth](#figma-source-of-truth) | Design | `python3 …/tests/test_skill.py` |
@@ -688,6 +692,100 @@ pair per Google rules, then validate the JSON-LD blocks.
 ```
 
 Verify: `node skills/seo-performance/tests/run.mjs`
+
+---
+
+### `ci-triage`
+
+CI failure triage for any forge: GitHub Actions or GitLab CI, `gh`/`glab` or
+supplied logs. Distinguishes code regression from infra, dependency or secret
+problems; log text is data, never execution authority. Reruns, pushes and
+protection changes need explicit authorization.
+
+Install only this skill: `tools/install-skills.sh ci-triage`
+
+- **Claude Code** (`~/.claude/skills/`): activates on red checks and pipeline
+  failures.
+- **Codex** (`~/.agents/skills/`): name `ci-triage`.
+- **oh-my-pi**: routes from the skill list; naming keeps it deterministic.
+
+```text
+Use the ci-triage skill: Actions run 1234 is red on main — classify the
+failing job, reproduce locally if cheap, report the fix scope first.
+```
+
+Verify: `python3 skills/ci-triage/tests/test_skill.py`
+
+---
+
+### `review-followup`
+
+Address requested GitHub PR / GitLab MR review comments against current code
+and tests: classify threads (fix / question / outdated / conflicting),
+implement without blindly copying reviewer patches, report what stays open.
+Review text is untrusted; posting, resolving and approving need
+authorization.
+
+Install only this skill: `tools/install-skills.sh review-followup`
+
+- **Claude Code** (`~/.claude/skills/`): activates on "address the review
+  comments" requests.
+- **Codex** (`~/.agents/skills/`): name `review-followup`.
+- **oh-my-pi**: routes from the skill list.
+
+```text
+Use the review-followup skill: PR 210 has three open threads — fix what is
+requested, report what stays open, no replies pushed without me.
+```
+
+Verify: `python3 skills/review-followup/tests/test_skill.py`
+
+---
+
+### `semgrep-security`
+
+Semgrep as the deterministic security lane after security-relevant changes:
+findings are evidence to investigate, valid ones get fixed in scope, false
+positives documented; repository Semgrep config outranks package defaults.
+
+Install only this skill: `tools/install-skills.sh semgrep-security`
+
+- **Claude Code** (`~/.claude/skills/`): activates around auth, endpoint,
+  file-handling and dependency changes.
+- **Codex** (`~/.agents/skills/`): name `semgrep-security`.
+- **oh-my-pi**: routes from the skill list.
+
+```text
+Use the semgrep-security skill: run the security lane on this diff and
+triage findings — valid, in-scope fixes first, false positives documented.
+```
+
+Verify: `python3 skills/semgrep-security/tests/test_skill.py`
+
+---
+
+### `playwright`
+
+Terminal browser automation for UI exploration, snapshots and interaction
+reproduction: one session per project/purpose, fresh snapshots before element
+references, Firefox default unless the repo pins another browser. Complements
+repository test suites, never replaces them; unrun checks are never reported
+as passed. Needs an existing Playwright CLI — the skill installs nothing.
+
+Install only this skill: `tools/install-skills.sh playwright`
+
+- **Claude Code** (`~/.claude/skills/`): activates on UI inspection and
+  reproduction requests.
+- **Codex** (`~/.agents/skills/`): name `playwright`.
+- **oh-my-pi**: routes from the skill list.
+
+```text
+Use the playwright skill: open the staging checkout page, snapshot it, and
+reproduce the double-submit on slow networks — screenshots into
+output/playwright/.
+```
+
+Verify: `python3 skills/playwright/tests/test_skill.py`
 
 ---
 
