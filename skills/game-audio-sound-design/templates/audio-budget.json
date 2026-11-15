@@ -1,0 +1,15 @@
+{
+  "$comment": "Performance budget template — illustrative defaults per platform, NOT universal limits. Copy, edit per project; audio_audit --budget consumes rate/channels.",
+  "profile": "desktop",
+  "max_simultaneous_voices": 48,
+  "audio_memory_budget_mb": 128,
+  "stream_music": true,
+  "preload_short_sfx": true,
+  "sfx": {"rate": 48000, "channels": 2},
+  "music": {"rate": 48000, "channels": 2},
+  "platforms": {
+    "web": {"max_simultaneous_voices": 16, "audio_memory_budget_mb": 32, "sfx": {"rate": 44100, "channels": 1}},
+    "mobile": {"max_simultaneous_voices": 24, "audio_memory_budget_mb": 64, "sfx": {"rate": 44100, "channels": 1}},
+    "desktop": {"max_simultaneous_voices": 48, "audio_memory_budget_mb": 128, "sfx": {"rate": 48000, "channels": 2}}
+  }
+}

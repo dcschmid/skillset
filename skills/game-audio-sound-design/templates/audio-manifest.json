@@ -1,0 +1,25 @@
+{
+  "$comment": "Example audio-manifest.json produced by audio_manifest.py create (values measured at write time). license_status: approved|review_required|restricted|unknown. quality_status: PASS|WARNING|FAIL|NOT_TESTED.",
+  "schema": "gaf-audio-manifest/1",
+  "project": "/path/to/game",
+  "created_utc": "2026-11-14T00:00:00+00:00",
+  "assets": [
+    {
+      "asset_id": "engine_start",
+      "category": "sfx",
+      "source": "sa3.cpp (Stable Audio 3 Small SFX, q8_0)",
+      "model": "small-sfx",
+      "seed": 42,
+      "prompt": "engine start, small four-stroke, garage reverb",
+      "duration_seconds": 2.5,
+      "sample_rate": 48000,
+      "channels": 2,
+      "file": "audio/engine_start.wav",
+      "measured": true,
+      "license_status": "review_required",
+      "quality_status": "PASS",
+      "target_engine": "generic",
+      "created_utc": "2026-11-14T00:00:00+00:00"
+    }
+  ]
+}

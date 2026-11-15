@@ -27,7 +27,7 @@ docs/                       architecture + authoring guides
 
 ## Skills
 
-Eighteen skills. The index below is navigation only; each skill then gets
+Twenty skills. The index below is navigation only; each skill then gets
 its own detailed section — scope, shipped automation, how to invoke it in
 Claude Code, Codex, and oh-my-pi (omp), copy-paste examples, and its own
 verify command. `skills/<name>/USAGE.md` is the same guide, mirrored into
@@ -39,6 +39,7 @@ README is the canonical copy.
 | [lowpoly-reference-to-blender](#lowpoly-reference-to-blender) | Game dev | `blender -b --python …/tests/test_e2e_pipeline.py` |
 | [defold-development](#defold-development) | Game dev | `python3 …/tests/test_skill.py` |
 | [game-asset-pipeline-shaders](#game-asset-pipeline-shaders) | Game dev | `python3 …/tests/test_skill.py` |
+| [game-audio-sound-design](#game-audio-sound-design) | Game dev | `python3 …/tests/test_skill.py` |
 | [godot](#godot) | Game dev | `python3 …/tests/test_skill.py` |
 | [astro](#astro) | Web frameworks | `python3 …/tests/test_skill.py` |
 | [react-nextjs](#react-nextjs) | Web frameworks | `python3 …/tests/test_skill.py` |
@@ -229,6 +230,50 @@ profile mobile; disk vs VRAM separately, pixel-art keeps lossless sources.
 
 Verify: `python3 skills/game-asset-pipeline-shaders/tests/test_skill.py` ·
 `blender -b --python-expr "import sys; sys.path.insert(0,'skills/game-asset-pipeline-shaders/scripts'); import blender_preflight; blender_preflight.main()"`
+
+---
+
+### `game-audio-sound-design`
+
+Game audio production + QA on top of the game-audio-forge backend (mandatory
+prerequisite, separate repo, `~/dev/github/game-audio-forge`): SFX/music
+generation driving `gaf`, adaptive-music and spatial-audio architectures,
+mixing guidance with measured loudness gates, asset+engine audits
+(`analyze|fix|optimize`, safe repairs → new files), performance budgets,
+per-asset license statuses, engine adapters (Defold 1.14.1, Godot 4.7.2 —
+verified APIs only). Doctor reports READY|PARTIALLY_READY|NOT_READY;
+measurement states PASS|WARNING|FAIL|NOT_TESTED, creative quality always
+`AUDIO_REVIEW_REQUIRED`. Offline LUFS honestly reported NOT_TESTED. Owns
+audio assets/QA/integration; backend internals stay in game-audio-forge,
+cross-cutting a11y in `accessibility`.
+
+Install only this skill: `tools/install-skills.sh game-audio-sound-design`
+
+- **Claude Code** (`~/.claude/skills/`): activates on audio/music/SFX/mix/
+  audio-audit tasks; requires the forge backend for generation.
+- **Codex** (`~/.agents/skills/`): reference `game-audio-sound-design`;
+  modes (doctor/audit/fix/optimize/validate/manifest) travel in the request.
+- **oh-my-pi**: routes from the skill list; ffmpeg + game-audio-forge back
+  the live lanes.
+
+Shipped: `scripts/` — `audio_doctor.py`, `audio_audit.py`, `audio_process.py`,
+`audio_batch.py`, `audio_validate.py`, `audio_manifest.py`, `gaf_adapter.py`,
+`engine_defold.py`, `engine_godot.py` (+ `audio_common.py`); `references/`
+(15) load per step; `templates/` config/manifest/budget JSON.
+
+```text
+Use the game-audio-sound-design skill: audit this project's audio, fix mode
+into a new directory, originals untouched, findings with severities and the
+doctor verdict included.
+```
+
+```text
+Use the game-audio-sound-design skill: generate a boss-fight music loop via
+game-audio-forge, verify measured BPM and loop seam, manifest it with license
+status.
+```
+
+Verify: `python3 skills/game-audio-sound-design/tests/test_skill.py`
 
 ---
 

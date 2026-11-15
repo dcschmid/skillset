@@ -1,0 +1,19 @@
+{
+  "$comment": "game-audio-sound-design project config. Copy into a project, edit values; resolution: --forge-root > GAME_AUDIO_FORGE_ROOT > forge_root > ~/dev/github/game-audio-forge. Loudness bands are guidance per profile — tune per game.",
+  "forge_root": "~/dev/github/game-audio-forge",
+  "engine": "generic",
+  "profile": "gameplay-sfx",
+  "output_dir": "audio",
+  "manifest": "audio-manifest.json",
+  "budget": "audio-budget.json",
+  "profiles": {
+    "ui-sfx": {"rms_dbfs": [-24, -10], "max_duration_s": 1.5},
+    "gameplay-sfx": {"rms_dbfs": [-20, -6], "max_duration_s": 3.0},
+    "ambience": {"rms_dbfs": [-30, -16], "loop": true},
+    "music": {"rms_dbfs": [-20, -8], "loop": true},
+    "voice": {"rms_dbfs": [-20, -8]},
+    "cinematics": {"rms_dbfs": [-22, -10]}
+  },
+  "formats": {"sfx": "wav-s16", "music": "ogg-vorbis", "archive": "flac"},
+  "license_default": "review_required"
+}
