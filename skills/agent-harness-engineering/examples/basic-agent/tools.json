@@ -1,0 +1,37 @@
+{
+  "tools": [
+    {
+      "name": "read_file",
+      "description": "Read a UTF-8 text file inside the project root. Returns content plus estimated token count. Not for binaries.",
+      "granularity": "medium",
+      "risk": "LOW",
+      "idempotent": true,
+      "timeout_ms": 10000,
+      "allowed_paths": ["**"],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {"type": "string", "description": "Project-relative file path"},
+          "max_lines": {"type": "integer", "description": "Optional line cap for large files"}
+        },
+        "required": ["path"]
+      }
+    },
+    {
+      "name": "deploy_service",
+      "description": "Deploy the staging service after tests pass. Approval required; reversible via previous release tag.",
+      "granularity": "micro",
+      "risk": "HIGH",
+      "idempotent": false,
+      "timeout_ms": 300000,
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "service": {"type": "string", "description": "Service name from the allowlist"},
+          "dry_run": {"type": "boolean", "description": "Preview without writing; default true"}
+        },
+        "required": ["service"]
+      }
+    }
+  ]
+}

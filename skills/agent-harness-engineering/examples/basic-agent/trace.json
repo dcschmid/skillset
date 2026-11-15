@@ -1,0 +1,12 @@
+{
+  "steps": [
+    {"kind": "agent_step", "name": "plan", "ok": true},
+    {"kind": "tool_call", "name": "read_file", "arguments": {"path": "src/app.py"}, "ok": true},
+    {"kind": "tool_call", "name": "edit_file", "arguments": {"path": "src/app.py", "patch": "…"}, "ok": false},
+    {"kind": "tool_call", "name": "edit_file", "arguments": {"path": "src/app.py", "patch": "…"}, "ok": false},
+    {"kind": "tool_call", "name": "edit_file", "arguments": {"path": "src/app.py", "patch": "…"}, "ok": false},
+    {"kind": "tool_call", "name": "edit_file", "arguments": {"path": "src/app.py", "patch": "…"}, "ok": false},
+    {"kind": "tool_call", "name": "run_tests", "arguments": {"suite": "unit"}, "ok": true},
+    {"kind": "agent_step", "name": "report", "ok": true}
+  ]
+}

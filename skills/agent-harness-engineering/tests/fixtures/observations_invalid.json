@@ -1,0 +1,5 @@
+[
+  {"status": "failed", "summary": "broke"},
+  {"status": "error", "summary": "boom", "error": {"category": "mystery", "cause": "x"}},
+  {"status": "warning", "summary": "line1\nline2"}
+]

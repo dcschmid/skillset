@@ -55,6 +55,7 @@ README is the canonical copy.
 | [review-followup](#review-followup) | Engineering | `python3 …/tests/test_skill.py` |
 | [semgrep-security](#semgrep-security) | Engineering | `python3 …/tests/test_skill.py` |
 | [playwright](#playwright) | Engineering | `python3 …/tests/test_skill.py` |
+| [agent-harness-engineering](#agent-harness-engineering) | Engineering | `python3 …/tests/test_skill.py` |
 | [design-authenticity](#design-authenticity) | Design | `python3 …/tests/test_skill.py` |
 | [design-system-ui](#design-system-ui) | Design | `node …/tests/run.mjs` |
 | [figma-source-of-truth](#figma-source-of-truth) | Design | `python3 …/tests/test_skill.py` |
@@ -942,6 +943,40 @@ previous posts — which is most me? Evidence, not vibes.
 
 Verify: `python3 skills/human-writing/tests/test_lint_text.py` (also
 `test_project_audit.py`, `test_website_audit.py`)
+
+---
+
+### `agent-harness-engineering`
+
+Engineering of the machinery around the model: agent architectures, tool
+definitions, observation contracts, context budgets, error recovery, loop
+detection, multi-agent coordination, benchmarks, traces. Platform-independent
+core (Claude Code, Codex, MCP, own Python/TS agents) + stdlib-only Python
+CLIs; unobservable areas report UNVERIFIED, skipped categories never distort
+the 0..100 score, offline benchmarks stay labeled offline. Skill selection
+stays with skill-orchestrator; this skill owns the agent runtime.
+
+Install only this skill: `tools/install-skills.sh agent-harness-engineering`
+
+- **Claude Code** / **Codex** / **oh-my-pi**: name `agent-harness-engineering`
+  plus the ask — audit, fix plan (dry-run), benchmark, security scan.
+
+```text
+Use the agent-harness-engineering skill: audit this project's agent harness,
+show score + findings, dry-run the fix plan; no writes without approval.
+```
+
+```text
+Use the agent-harness-engineering skill: benchmark tool calls before/after
+the tool-granularity change and flag any regression.
+```
+
+CLIs: `scripts/{audit_harness,validate_tools,validate_observations,
+analyze_context,detect_loops,analyze_traces,security_scan,benchmark_agent,
+compare_benchmarks,generate_report}.py` — `--help` everywhere, JSON+Markdown
+out. Contracts in `schemas/`, depth in `references/`.
+
+Verify: `python3 skills/agent-harness-engineering/tests/test_skill.py`
 
 ---
 

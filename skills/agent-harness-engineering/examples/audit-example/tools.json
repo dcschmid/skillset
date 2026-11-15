@@ -1,0 +1,6 @@
+{
+  "tools": [
+    {"name": "read", "description": "read one file inside the project", "parameters": {"type": "object", "properties": {"path": {"type": "string", "description": "relative path"}}}},
+    {"name": "read", "description": "read one file inside the project", "parameters": {"type": "object", "properties": {"path": {"type": "string", "description": "relative path"}}}}
+  ]
+}

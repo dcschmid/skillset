@@ -1,0 +1,14 @@
+{
+  "tools": [
+    {
+      "name": "Bad Name",
+      "parameters": {"type": "object", "properties": {"Path": {"type": "string"}}, "required": ["missing"]},
+      "timeout_ms": -5
+    },
+    {
+      "name": "helper",
+      "description": "do stuff",
+      "parameters": {"type": "array"}
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "agent-harness-engineering/audit-report.schema.json",
+  "title": "Harness audit report",
+  "type": "object",
+  "required": ["project", "findings", "score", "categories", "verdict"],
+  "properties": {
+    "project": { "type": "string" },
+    "files_scanned": { "type": "integer", "minimum": 0 },
+    "score": { "type": "number", "minimum": 0, "maximum": 100, "description": "Weighted, skipped categories excluded from denominator." },
+    "verdict": { "enum": ["PASS", "FINDINGS"] },
+    "categories": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "earned": { "type": "number" }, "max": { "type": "number" },
+          "weight": { "type": "number" },
+          "status": { "enum": ["scored", "skipped"], "description": "skipped = not observable; never scored 0, never credited." },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "category", "severity", "component", "evidence", "fix", "fixable", "risk"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^AHE-[0-9]{3}$" },
+          "category": { "enum": ["architecture", "tools", "context", "reliability", "recovery", "security", "performance", "multi-agent", "observability", "test-coverage"] },
+          "severity": { "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"] },
+          "component": { "type": "string" },
+          "evidence": { "type": "string", "description": "file/line/quote — no evidence, no finding" },
+          "cause": { "type": "string" }, "impact": { "type": "string" },
+          "fix": { "type": "string" },
+          "fixable": { "enum": ["yes", "review", "no"], "description": "'review' = manual steps documented" },
+          "risk": { "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"], "description": "risk of applying the fix" }
+        }
+      }
+    },
+    "fix_plan": { "type": "array", "items": { "type": "object" } },
+    "applied": { "type": "array", "items": { "type": "string" } }
+  }
+}

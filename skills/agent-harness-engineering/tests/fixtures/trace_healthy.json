@@ -1,0 +1,8 @@
+{"steps": [
+  {"kind": "agent_step", "name": "plan", "ok": true},
+  {"kind": "tool_call", "name": "read_file", "arguments": {"path": "a.py"}, "ok": true},
+  {"kind": "tool_call", "name": "edit_file", "arguments": {"path": "a.py"}, "ok": false},
+  {"kind": "tool_call", "name": "read_file", "arguments": {"path": "a.py"}, "ok": true},
+  {"kind": "tool_call", "name": "edit_file", "arguments": {"path": "a.py", "patch": "v2"}, "ok": true},
+  {"kind": "agent_step", "name": "report", "ok": true}
+]}

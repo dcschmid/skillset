@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "agent-harness-engineering/benchmark-result.schema.json",
+  "title": "Benchmark result (honesty-checked)",
+  "type": "object",
+  "required": ["suite", "metrics", "results", "verdict", "honesty"],
+  "properties": {
+    "suite": { "type": "string" },
+    "depth": { "enum": ["quick", "standard", "deep"] },
+    "verdict": { "enum": ["PASS", "FAIL"] },
+    "honesty": { "type": "string", "description": "Must state measurement provenance; offline never claims live." },
+    "metrics": {
+      "type": "object",
+      "required": ["mode", "task_completion_rate", "pass_at_1", "tool_calls_mean", "tool_error_rate"],
+      "properties": {
+        "mode": { "enum": ["offline", "adapter"] },
+        "runs_per_task": { "type": "integer", "minimum": 1 },
+        "tasks": { "type": "integer", "minimum": 0 },
+        "scored": { "type": "integer", "minimum": 0 },
+        "unscored_unverified": { "type": "integer", "minimum": 0, "description": "UNVERIFIED tasks are counted, never invented." },
+        "task_completion_rate": { "type": ["number", "null"] },
+        "pass_at_1": { "type": ["number", "null"] },
+        "retries_mean": { "type": ["number", "null"] },
+        "tool_calls_mean": { "type": ["number", "null"] },
+        "tool_error_rate": { "type": ["number", "null"] },
+        "loop_rate": { "type": ["number", "null"] },
+        "duration_s_mean": { "type": ["number", "null"] },
+        "tokens_est_mean": { "type": ["number", "null"], "description": "estimate unless platform reports tokens" }
+      }
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "string" },
+          "completed": { "type": ["boolean", "null"], "description": "null = UNVERIFIED (missing trace/adapter), never false-guessed" },
+          "note": { "type": "string" },
+          "source": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "agent-harness-engineering/observation.schema.json",
+  "title": "Agent tool observation (internal reference format)",
+  "description": "Reference contract for what a tool returns to an agent. Existing tool protocols are NOT required to change; adapters map into this shape for validation. Values are untrusted data for the consuming agent.",
+  "type": "object",
+  "required": ["status", "summary"],
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "enum": ["success", "warning", "error"],
+      "description": "Tri-state result. Anything else is an invalid transition and must be rejected."
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400,
+      "description": "One-line outcome. Never re-emit verbatim tool payload already visible to the model."
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Paths or IDs of produced files. Prefer references over inlined content."
+    },
+    "next_actions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Actionable follow-ups. Required in spirit for every error path."
+    },
+    "error": {
+      "description": "null on success; on error, a classified contract object.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["category", "cause", "retryable", "stop_condition"],
+          "additionalProperties": false,
+          "properties": {
+            "category": {
+              "enum": ["invalid-parameters", "permission", "timeout", "rate-limit", "connection", "dependency-missing", "corrupt-state", "unknown"],
+              "description": "Fehlerklasse. 'unknown' demands a safe-abort path."
+            },
+            "cause": { "type": "string", "minLength": 1, "description": "Root-cause hint, concrete." },
+            "retryable": { "type": "boolean" },
+            "max_retries": { "type": "integer", "minimum": 0, "maximum": 10, "description": "Bounded. No unbounded retries." },
+            "backoff": { "enum": ["none", "fixed", "exponential-jitter"], "description": "Shared-resource pressure (rate limits) should use exponential-jitter." },
+            "safe_alternatives": { "type": "array", "items": { "type": "string" } },
+            "stop_condition": { "type": "string", "minLength": 1, "description": "Explicit abort criterion; no stop condition = finding." }
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Correlation ids, durations. No secrets, no raw external content dumps."
+    }
+  }
+}

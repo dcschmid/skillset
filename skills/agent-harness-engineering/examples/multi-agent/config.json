@@ -1,0 +1,8 @@
+{
+  "agents": [
+    {"role": "supervisor", "tools": [], "may_delegate_to": ["worker_a", "worker_b"], "max_delegations": 6},
+    {"role": "worker_a", "tools": ["write_file"], "writes": ["out/a.md"], "may_delegate_to": [], "max_delegations": 0},
+    {"role": "worker_b", "tools": ["validate"], "writes": [], "may_delegate_to": [], "max_delegations": 0}
+  ],
+  "shared_state": {"out/a.md": {"writer": "worker_a", "readers": ["worker_b", "supervisor"]}}
+}

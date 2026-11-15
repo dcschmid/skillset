@@ -1,0 +1,30 @@
+{
+  "tools": [
+    {
+      "name": "read",
+      "description": "Read one project file as text.",
+      "granularity": "medium",
+      "risk": "LOW",
+      "idempotent": true,
+      "timeout_ms": 5000,
+      "parameters": {
+        "type": "object",
+        "properties": {"path": {"type": "string", "description": "relative file path"}},
+        "required": ["path"]
+      }
+    },
+    {
+      "name": "write_note",
+      "description": "Create or overwrite a note inside notes/.",
+      "granularity": "medium",
+      "risk": "MEDIUM",
+      "idempotent": true,
+      "timeout_ms": 5000,
+      "parameters": {
+        "type": "object",
+        "properties": {"path": {"type": "string", "description": "notes/<name>.md"}, "body": {"type": "string", "description": "markdown body"}},
+        "required": ["path", "body"]
+      }
+    }
+  ]
+}

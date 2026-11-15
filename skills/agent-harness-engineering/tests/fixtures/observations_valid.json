@@ -1,0 +1,8 @@
+[
+  {"status": "success", "summary": "read 42 lines", "artifacts": ["src/app.py"], "next_actions": [], "error": null, "metadata": {"run": "r-1"}},
+  {"status": "error", "summary": "edit rejected",
+   "error": {"category": "invalid-parameters", "cause": "patch context stale", "retryable": true,
+             "max_retries": 2, "backoff": "exponential-jitter",
+             "safe_alternatives": ["re-read file then re-patch"], "stop_condition": "2 retries failed"},
+   "next_actions": ["re-read"], "artifacts": [], "metadata": {}}
+]

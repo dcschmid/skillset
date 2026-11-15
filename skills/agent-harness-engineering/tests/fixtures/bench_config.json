@@ -1,0 +1,9 @@
+{
+  "mode": "offline",
+  "suite": "fixture-suite",
+  "runs_per_task": 1,
+  "tasks": [
+    {"id": "t-healthy", "trace": "trace_healthy.json", "success_criteria": ["edit applied"]},
+    {"id": "t-loopy", "trace": "trace_loop.json", "success_criteria": ["answer produced"]}
+  ]
+}

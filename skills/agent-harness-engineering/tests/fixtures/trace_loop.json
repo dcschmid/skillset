@@ -1,0 +1,6 @@
+{"steps": [
+  {"kind": "tool_call", "name": "search", "arguments": {"q": "auth"}, "ok": true},
+  {"kind": "tool_call", "name": "search", "arguments": {"q": "auth"}, "ok": true},
+  {"kind": "tool_call", "name": "search", "arguments": {"q": "auth"}, "ok": true},
+  {"kind": "tool_call", "name": "search", "arguments": {"q": "auth"}, "ok": true}
+]}

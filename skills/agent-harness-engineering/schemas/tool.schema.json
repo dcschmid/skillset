@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "agent-harness-engineering/tool.schema.json",
+  "title": "Agent tool definition (portable contract)",
+  "description": "Portable core every harness can express. Platform-specific wrappers (OpenAI function format, MCP tool descriptors, host-native manifests) adapt around it via 'function' nesting or adapters; adapters must not weaken these checks.",
+  "type": "object",
+  "required": ["name", "description"],
+  "properties": {
+    "name": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$", "description": "Stable, explicit, lowercase." },
+    "description": { "type": "string", "minLength": 10, "maxLength": 600, "description": "One unambiguous purpose; <=60 words." },
+    "granularity": { "enum": ["micro", "medium", "macro"], "description": "micro=controlled risky ops; medium=normal loops; macro=merged hot workflows only. Macro never bypasses approval gates." },
+    "parameters": {
+      "type": "object",
+      "description": "Input JSON Schema, root type object, narrow.",
+      "properties": {
+        "type": { "const": "object" },
+        "properties": { "type": "object" },
+        "required": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "returns": { "type": "object", "description": "Output shape the tool promises (observation contract recommended)." },
+    "timeout_ms": { "type": "integer", "minimum": 1, "maximum": 600000, "description": "Bounded execution." },
+    "idempotent": { "type": "boolean", "description": "Safe to re-run after unknown outcome?" },
+    "risk": { "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"], "description": "Least-privilege tier; HIGH/CRITICAL need approval." },
+    "allowed_paths": { "type": "array", "items": { "type": "string" }, "description": "Path allowlist when the tool touches the filesystem." }
+  }
+}
