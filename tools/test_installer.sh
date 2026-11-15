@@ -75,6 +75,7 @@ mkdir -p "$CLAUDE/unrelated-skill"
 ln -sfn "$FOREIGN" "$CODEX/$SKILL"   # make codex copy foreign on purpose
 bash "$REPO/tools/uninstall-skills.sh" >/dev/null 2>&1
 t "uninstall.removes_claude" '[ ! -e "$CLAUDE/'"$SKILL"'" ]'
+t "uninstall.removes_omp" '[ ! -L "$PP/$SKILL" ] && [ ! -L "$PW/$SKILL" ]'
 t "uninstall.keeps_foreign_codex" "[ \"\$(readlink -f '$CODEX/$SKILL')\" = '$FOREIGN' ]"
 t "uninstall.keeps_foreign_dir"   '[ -d "$CLAUDE/unrelated-skill" ]'
 t "uninstall.clears_manifest"     "[ ! -f '$MANIFEST' ]"
@@ -116,7 +117,7 @@ pid_second=$!
 wait "$pid_first"; first_rc=$?
 wait "$pid_second"; second_rc=$?
 t "parallel.install_success" "[ $first_rc -eq 0 ] && [ $second_rc -eq 0 ]"
-t "parallel.manifest_complete" '[ "$(wc -l < "$MANIFEST")" -eq 4 ]'
+t "parallel.manifest_complete" '[ "$(wc -l < "$MANIFEST")" -eq 8 ]'
 t "parallel.links_complete" '[ -L "$CLAUDE/$SKILL" ] && [ -L "$CODEX/$SECOND" ]'
 # The same lock must also serialize uninstall with install.
 bash "$REPO/tools/uninstall-skills.sh" "$SKILL" >/dev/null 2>&1 &
@@ -126,7 +127,7 @@ pid_second=$!
 wait "$pid_first"; first_rc=$?
 wait "$pid_second"; second_rc=$?
 t "parallel.mixed_success" "[ $first_rc -eq 0 ] && [ $second_rc -eq 0 ]"
-t "parallel.mixed_manifest" '[ "$(wc -l < "$MANIFEST")" -eq 2 ] && [ ! -L "$CLAUDE/$SKILL" ] && [ -L "$CODEX/$SECOND" ]'
+t "parallel.mixed_manifest" '[ "$(wc -l < "$MANIFEST")" -eq 4 ] && [ ! -L "$CLAUDE/$SKILL" ] && [ -L "$CODEX/$SECOND" ]'
 t "parallel.no_temp_left" '! compgen -G "$MANIFEST.tmp.*" >/dev/null'
 
 # 11. EXCLUSIVE routing: a scoped skill lives only in its own profile roots —
@@ -142,7 +143,7 @@ t "route.working_omp"      '[ -L "$PW/$WORK" ]'
 t "route.working_codex"    '[ -L "$CW/$WORK" ]'
 t "route.working_absent_shared" '[ ! -e "$CLAUDE/'"$WORK"'" ] && [ ! -e "$CODEX/'"$WORK"'" ]'
 t "route.working_not_private" '[ ! -e "$PP/'"$WORK"'" ] && [ ! -e "$CX/'"$WORK"'" ]'
-t "route.both_shared_only" '[ -L "$CLAUDE/$SKILL" ] && [ -L "$CODEX/$SKILL" ] && [ ! -e "$PP/'"$SKILL"'" ] && [ ! -e "$PW/'"$SKILL"'" ]'
+t "route.both_shared_and_omp" '[ -L "$CLAUDE/$SKILL" ] && [ -L "$CODEX/$SKILL" ] && [ -L "$PP/'"$SKILL"'" ] && [ -L "$PW/'"$SKILL"'" ]'
 t "route.manifest_scoped"  "awk -F'\\t' -v n='$PRIV' '\$1==n' '$MANIFEST' | grep -q 'omp/profiles/private' && ! awk -F'\\t' -v n='$PRIV' '\$1==n' '$MANIFEST' | grep -q '.claude'"
 
 # 12. scope change prunes the old profile root on reinstall (private -> working).

@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "review-finding",
+  "description": "One review finding. The executable form of this contract is validate_findings.py; the two MUST stay in sync. Secrets are never embedded: cite location + kind, values masked (sk-***masked***).",
+  "type": "object",
+  "required": ["id", "axis", "severity", "confidence", "file", "title",
+               "description", "impact", "recommendation", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id":               { "type": "string", "pattern": "^CR-[0-9]{3,}$" },
+    "axis":             { "enum": ["standards", "spec", "bugs", "security",
+                                   "testing", "performance"] },
+    "severity":         { "enum": ["critical", "high", "medium", "low",
+                                   "info"] },
+    "confidence":       { "enum": ["confirmed", "strong-evidence",
+                                   "suspected", "needs-verification"] },
+    "file":             { "type": "string", "description": "repo-relative path, no leading / or .." },
+    "line_start":       { "type": "integer", "minimum": 1 },
+    "line_end":         { "type": "integer", "minimum": 1 },
+    "title":            { "type": "string", "minLength": 3 },
+    "description":      { "type": "string", "minLength": 3 },
+    "impact":           { "type": "string", "description": "what breaks in practice" },
+    "evidence":         { "type": "string", "description": "quoted code / command output; findings without it are suspected at best" },
+    "recommendation":   { "type": "string", "description": "concrete fix or next check" },
+    "verification":     { "type": "string", "description": "how to prove the fix" },
+    "status":           { "enum": ["open", "fixed", "deferred", "wontfix"] },
+    "also_flagged_by":  { "type": "array", "items": { "enum": ["standards", "spec", "bugs", "security", "testing", "performance"] }, "description": "set by dedupe; primary axis stays the first reporter's" },
+    "refs":             { "type": "array", "items": { "type": "string" }, "description": "standard/spec citations, e.g. 'AGENTS.md: naming' or 'spec: R2'" }
+  }
+}

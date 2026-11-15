@@ -13,16 +13,16 @@
 # Two separation models coexist (both mirror the dev-setup stack):
 #   Durable (spatial) — omp profiles and private/working Codex homes. Routing
 #     is EXCLUSIVE (tools/profile-map.tsv, scope = private|working|both):
-#       both     -> shared roots  (~/.claude/skills, ~/.agents/skills)
+#       both     -> shared roots + native OMP roots for both profiles
 #       private  -> private roots (~/.omp/profiles/private/agent/skills, ~/.codex/skills)
 #       working  -> working roots (~/.omp/profiles/working/agent/skills, $STACK/codex-working-home/skills)
 #     A scoped skill is absent from the other scopes, so omp/Codex never cross.
 #   Launch (temporal) — Claude Code has ONE shared root (~/.claude/skills), read
 #     by every profile, so it cannot be scoped spatially. `--claude <profile>`
 #     rewrites that root in place (mirrors mm-profile-skills-sync): the last
-#     launched profile's scoped skills win. omp loads the shared roots as a
-#     background too, so Claude's launch state is visible to omp profiles as a
-#     soft fallback; the hard omp/Codex split stays in the per-profile roots.
+#     launched profile's scoped skills win. OMP receives common skills in its
+#     native profile roots, without relying on foreign user-skill discovery.
+#     Per-profile roots keep the durable OMP/Codex split.
 #
 # Idempotent. Foreign (non-managed) skills in target dirs are never touched.
 # Conflicts (a real dir or foreign link where a managed link belongs) are
@@ -63,7 +63,7 @@ targets_for() {
   case "$(scope_of "$1")" in
     private) printf '%s\n' "${PRIVATE[@]}" ;;
     working) printf '%s\n' "${WORKING[@]}" ;;
-    *)       printf '%s\n' "${SHARED[@]}" ;;
+    *)       printf '%s\n' "${SHARED[@]}" "${PRIVATE[0]}" "${WORKING[0]}" ;;
   esac
 }
 # True when `root` is owned by the skill: its durable roots, or — for a scoped

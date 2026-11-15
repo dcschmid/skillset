@@ -1,26 +1,15 @@
 ---
 name: game-asset-pipeline-shaders
 description: >
-  Technical game-asset pipeline for materials, textures, shaders, and
-  import/export, engine-agnostic with Defold and Godot adapters (extensible to
-  Unity, Unreal, Bevy, custom renderers, WebGL/WebGPU). Use for ANY asset
-  pipeline task in ANY project or any asset-pipeline question: material and
-  material-system audits (PBR metallic-roughness, unlit, flat, toon/cel,
-  vertex-color, emissive, transparent, alpha-cutout, decal, terrain, water,
-  glass, SSS, triplanar, stylized), texture pipeline and compression choices
-  (PNG/JPEG/WebP/TGA/EXR/HDR/DDS/KTX2; Basis Universal ETC1S/UASTC, BC1-BC7,
-  ASTC, ETC2), color-space correctness (sRGB vs linear data maps, normal-map
-  conventions, alpha bleeding, seams), shader engineering and GLSL/Spatial/
-  CanvasItem/fragment-cost audits, shader-variant explosion, glTF 2.0/GLB
-  validation (KHR_draco, KHR_mesh_quantization, KHR_texture_basisu, EXT/KHR
-  meshopt, EXT_mesh_gpu_instancing), Blender→engine export preflight (scale,
-  transforms, UVs, normals, tangents, slots, skeletons, morphs), mesh/LOD and
-  GPU/VRAM budgets, visual regression (pixel diff/SSIM), asset audit and safe
-  auto-fix of existing projects, CI-ready headless asset gates. Art-style-aware
-  rules (pixel-art/voxel/low-poly/hand-painted/toon/realistic/isometric/2D/
-  2.5D/3D). Detects engine, engine version, art style, and installed tools from
-  the project first; version-gated claims, unverified items marked, never
-  invented; never mutates originals without dry-run plus backup.
+  Technical game-asset pipelines for materials, textures, shaders, and
+  import/export in any engine, with Defold and Godot adapters. Use for material
+  audits (PBR, unlit, toon, transparency), texture compression and color spaces,
+  shader correctness and cost, glTF/GLB validation, Blender export preflight,
+  mesh/LOD and GPU/VRAM budgets, visual regression, asset audits, safe fixes,
+  and headless CI gates. Supports 2D, 3D, pixel art, voxel, low-poly, stylized,
+  and realistic projects. Detect engine/version, art style, and installed tools
+  first; verify version-sensitive claims. Never mutate originals without a
+  dry-run and backup. Extensible to Unity, Unreal, Bevy, and custom renderers.
 ---
 
 # Game Asset Pipeline & Shaders (universal)

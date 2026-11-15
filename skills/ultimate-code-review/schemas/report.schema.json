@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "review-report-bundle",
+  "description": "Output of generate_report.py --format json: report + scope + context. Axis results stay separate; no cross-axis score exists. validate_findings.py output is the 'report' member and is the gate source of truth.",
+  "type": "object",
+  "required": ["report"],
+  "properties": {
+    "report": {
+      "type": "object",
+      "required": ["verdict", "findings"],
+      "properties": {
+        "verdict":      { "enum": ["VALID", "PARTIAL", "INVALID"] },
+        "open":         { "type": "integer", "minimum": 0 },
+        "by_severity":  { "type": "object" },
+        "by_axis":      { "type": "object" },
+        "invalid":      { "type": "array", "description": "findings rejected by the schema — gaps, listed never silent" },
+        "merged":       { "type": "array", "description": "dedupe log: id -> merged_into" },
+        "skipped_axes": { "type": "array", "items": { "type": "string" }, "description": "documented gaps (e.g. spec=SPEC_NOT_AVAILABLE); a skipped axis is never a pass" },
+        "gate": {
+          "type": "object",
+          "required": ["pass"],
+          "properties": {
+            "level":   { "enum": ["critical", "high", "security", "all"] },
+            "pass":    { "type": "boolean", "description": "true only if no open blocking finding AND no invalid findings; skipped checks are reported separately" },
+            "blocking": { "type": "array" },
+            "warnings": { "type": "array" },
+            "invalid_findings": { "type": "integer" },
+            "skipped_axes": { "type": "array" }
+          }
+        },
+        "findings": { "type": "array", "items": { "$ref": "finding.schema.json" } }
+      }
+    },
+    "scope":   { "type": ["object", "null"], "description": "git_review.py output (mode, base/target SHAs, diff command, files)" },
+    "context": { "type": ["object", "null"], "description": "collect_context.py output (branch, standards, spec status, tools, checks)" }
+  }
+}

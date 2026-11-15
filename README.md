@@ -27,7 +27,7 @@ docs/                       architecture + authoring guides
 
 ## Skills
 
-Twenty-four skills. The index below is navigation only; each skill then gets
+Twenty-seven skills. The index below is navigation only; each skill then gets
 its own detailed section — scope, shipped automation, how to invoke it in
 Claude Code, Codex, and oh-my-pi (omp), copy-paste examples, and its own
 verify command. `skills/<name>/USAGE.md` is the same guide, mirrored into
@@ -47,6 +47,7 @@ README is the canonical copy.
 | [ultimate-security-hardening](#ultimate-security-hardening) | Engineering | `python3 …/tests/test_skill.py` |
 | [ultimate-testing-qa](#ultimate-testing-qa) | Engineering | `node …/tests/run.mjs` |
 | [ultimate-code-quality-refactoring](#ultimate-code-quality-refactoring) | Engineering | `python3 …/tests/test_skill.py` |
+| [ultimate-code-review](#ultimate-code-review) | Engineering | `python3 …/tests/test_skill.py` |
 | [ultimate-i18n-localization](#ultimate-i18n-localization) | Engineering | `node …/tests/run.mjs` |
 | [documentation-technical-writing](#documentation-technical-writing) | Engineering | `python3 …/tests/test_skill.py` |
 | [accessibility](#accessibility) | Engineering | `python3 …/tests/test_skill.py` |
@@ -56,6 +57,7 @@ README is the canonical copy.
 | [semgrep-security](#semgrep-security) | Engineering | `python3 …/tests/test_skill.py` |
 | [playwright](#playwright) | Engineering | `python3 …/tests/test_skill.py` |
 | [agent-harness-engineering](#agent-harness-engineering) | Engineering | `python3 …/tests/test_skill.py` |
+| [lean-engineering](#lean-engineering) | Engineering | `python3 …/tests/test_skill.py` |
 | [design-authenticity](#design-authenticity) | Design | `python3 …/tests/test_skill.py` |
 | [design-system-ui](#design-system-ui) | Design | `node …/tests/run.mjs` |
 | [figma-source-of-truth](#figma-source-of-truth) | Design | `python3 …/tests/test_skill.py` |
@@ -64,9 +66,9 @@ README is the canonical copy.
 
 Invoke convention used by all three hosts: name the skill with its exact
 directory name and describe the task. Claude Code reads
-`~/.claude/skills/`, Codex reads `~/.agents/skills/`, oh-my-pi loads both
-roots plus its own managed skills; naming the skill keeps activation
-deterministic instead of relying on description matching. Explicit parameter
+`~/.claude/skills/`, Codex reads `~/.agents/skills/` and its profile roots,
+and oh-my-pi uses its native profile skill directory. Naming the skill requests
+explicit activation rather than relying on description matching. Explicit parameter
 lists (asset_type, polygon_budget, quality_profile, …) live in each
 `SKILL.md`; defaults are sane — the agent stops only for missing references
 or contradictory specs.
@@ -532,6 +534,55 @@ Verify: `python3 skills/ultimate-code-quality-refactoring/tests/test_skill.py`
 
 ---
 
+### `ultimate-code-review`
+
+Multi-axis code review & PR audit for any stack (web TS/React/Next/Astro,
+backend Python/Go/Rust, GDScript/Godot, Lua/Defold, Blender Python, CLI,
+monorepos, Docker/CI — detected from files, never assumed). Six independent
+axes — Standards, Spec, Bugs, Security, Testing, Performance — each reported
+separately, never merged into one score. Diff scopes: branch (three-dot
+merge-base), commit, range, staged, uncommitted (+untracked listed apart),
+single file, full-repo batches, PR read-only via gh/glab. Findings carry
+file:line + quoted evidence, severity×confidence, schema-validated, deduped
+with axis links. Read-only default; `--fix` (`--safe-only` low-risk-only) is
+the sole write mode; no commit/push. Spec absent → SPEC_NOT_AVAILABLE;
+skipped checks are gaps, never passes; gates (critical/high/security/all)
+exit 0/1/2 for CI. Axis sub-agents depth-1, no recursion, sequential
+fallback labeled honestly. Concept lineage: Matt Pocock's code-review skill
+(MIT), extended.
+
+Install only this skill: `tools/install-skills.sh ultimate-code-review`
+
+- **Claude Code** (`~/.claude/skills/`): fires on "review this PR",
+  "/code-review --base main", "audit this diff".
+- **Codex** (`~/.agents/skills/`): name `ultimate-code-review`.
+- **oh-my-pi**: routes from the skill list; axis agents run isolated,
+  sequential fallback when unavailable.
+
+Shipped: `scripts/prepare_review.py`, `git_review.py`, `collect_context.py`,
+`validate_findings.py`, `generate_report.py`; axis briefs `agents/*` +
+`schemas/`. Standards/Spec independence + gate honesty are the contract.
+
+```text
+/code-review --base main --gate high — merge-blocking only on confirmed,
+skipped checks listed as gaps.
+```
+
+```text
+Use the ultimate-code-review skill: review my uncommitted changes against
+docs/sprint-14.md, all six axes separate, md+json into reports/code-review/,
+no fixes.
+```
+
+```text
+Use the ultimate-code-review skill: /code-review --full on this repo,
+prioritized batches, PARTIAL over fake-complete.
+```
+
+Verify: `python3 skills/ultimate-code-review/tests/test_skill.py`
+
+---
+
 ### `ultimate-i18n-localization`
 
 i18n/l10n for web (Astro, Next.js/next-intl, React/i18next, Vue/Nuxt, Svelte,
@@ -980,6 +1031,48 @@ Verify: `python3 skills/agent-harness-engineering/tests/test_skill.py`
 
 ---
 
+### `lean-engineering`
+
+Cross-cutting lean engineering mode for any coding task in any stack (JS/TS,
+React/Next, Astro, Python, backends, CLIs, Lua/Defold, GDScript/Godot,
+Blender Python; unknown → cautious generic): the simplest COMPLETE, correct,
+maintainable solution — not the shortest code. A 7-rung ladder (need? reuse?
+extend? stdlib? installed dep? few edits? abstraction last) before new code,
+a never-cut floor (security, validation, error handling, a11y, tests, perf,
+requested features), session modes lite/full/ultra/off, and /lean review,
+/lean audit (7-field findings), /lean simplify (behavior-preserving),
+/lean debt (shortcut ledger). Decides scope/simplicity; domain skills keep
+their checks. No scripts, no runtime — instructions plus stdlib self-test.
+Triggers: "lean", "yagni", "over-engineered", "/lean ...".
+
+Install only this skill: `tools/install-skills.sh lean-engineering`
+
+- **Claude Code** (`~/.claude/skills/`): fires on coding asks + "lean",
+  "yagni", "/lean <mode>" (argument-hint in frontmatter).
+- **Codex** (`~/.agents/skills/`): name `lean-engineering`; slash-phrases
+  matched as plain text.
+- **oh-my-pi**: loaded from the roots; mode sticky per session until
+  `/lean off`; stateless hosts restate "lean mode: full" per turn.
+
+```text
+Use the lean-engineering skill: add CSV export to /api/reports — leanest
+complete solution, no new dependencies, tests for new logic.
+```
+
+```text
+Use the lean-engineering skill: /lean audit src/ — over-engineering scan,
+7-field findings, KEEP rows for architecture that earns its keep.
+```
+
+```text
+Use the lean-engineering skill: /lean simplify packages/core/pricing.ts —
+identical behavior, public API frozen, project tests per step.
+```
+
+Verify: `python3 skills/lean-engineering/tests/test_skill.py`
+
+---
+
 ### `skill-orchestrator`
 
 Quality and orchestration manager for this repository itself: discovery,
@@ -1054,9 +1147,13 @@ package skills; the roots below mirror its `target_dir` convention.
 
 | Scope | Roots (exclusive — never the other scopes' roots) |
 |---|---|
-| `both` | `~/.claude/skills`, `~/.agents/skills` (shared, every profile sees them) |
+| `both` | `~/.claude/skills`, `~/.agents/skills`, and both native OMP profile skill directories |
 | `private` | `~/.omp/profiles/private/agent/skills`, `~/.codex/skills` |
 | `working` | `~/.omp/profiles/working/agent/skills`, `$STACK/codex-working-home/skills` |
+
+Common skills are linked directly into both OMP profiles so discovery does not
+depend on importing another client's user skill directories. These links expose
+metadata; full skill instructions are read only when selected for a task.
 
 Routing is exclusive, matching the dev-setup `payload/{private,working}` split:
 a scoped skill is absent from the shared roots and from the other profile, so

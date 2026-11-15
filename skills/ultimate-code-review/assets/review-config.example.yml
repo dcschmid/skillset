@@ -1,0 +1,21 @@
+# review-config.yml — OPTIONAL per-project overrides for ultimate-code-review.
+# Absent file = defaults below. Scripts read equivalents via CLI flags;
+# this file is the durable project-level statement.
+scope:
+  default_base: null            # null = infer; ambiguous -> NEEDS_BASE_REF
+  excludes_extra: []            # appended to built-in excludes
+  # - "vendor/"
+  # - "**/*.generated.ts"
+  max_files: 2000               # full-mode inventory cap per batch
+review:
+  axes: [standards, spec, bugs, security, testing, performance]
+  max_agents: 6                 # one per axis, depth 1
+report:
+  out: reports/code-review/
+  format: both                  # md | json | both
+  title: Code Review Report
+gate:
+  level: null                   # critical | high | security | all | null(off)
+fix:
+  enabled_by_default: false     # writes happen only when --fix is passed
+  safe_only_ceiling: medium     # --safe-only refuses above this + arch/db/auth
